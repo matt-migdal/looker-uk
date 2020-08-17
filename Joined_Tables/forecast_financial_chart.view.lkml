@@ -1,0 +1,1799 @@
+view: forecast_financial_chart {
+  derived_table: {
+    sql:
+
+        SELECT
+                  finished_growth.row,
+                  finished_growth.symbol,
+                  finished_growth.merger_type,
+                  finished_growth.panel_type,
+                  finished_growth.cardtype,
+                  finished_growth.cardtype_include,
+                  finished_growth.panel_method,
+                  finished_growth.period,
+                  finished_growth.yago_period,
+                  finished_growth.financial_start_dt,
+                  finished_growth.financial_end_dt,
+                  finished_growth.yago_financial_start_dt,
+                  finished_growth.yago_financial_end_dt,
+                  finished_growth.reported_sales,
+                  finished_growth.yago_reported_sales,
+                  finished_growth.reported_growth,
+                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_constind`) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_emax`) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.spend END as spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_constind`) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_emax`) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.yago_spend END as yago_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_constind`) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_emax`) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.estimated_growth END as estimated_growth,
+                  finished_growth.latest_reported_num,
+                  finished_growth.one_predicted_reported,
+                  finished_growth.two_predicted_reported,
+                  finished_growth.three_predicted_reported,
+                  finished_growth.four_predicted_reported,
+                  finished_growth.five_predicted_reported,
+                  finished_growth.six_predicted_reported,
+                  finished_growth.seven_predicted_reported,
+                  finished_growth.eight_predicted_reported,
+                  finished_growth.all_predicted_reported,
+                  finished_growth.one_observed_gap,
+                  finished_growth.two_observed_gap,
+                  finished_growth.three_observed_gap,
+                  finished_growth.four_observed_gap,
+                  finished_growth.five_observed_gap,
+                  finished_growth.six_observed_gap,
+                  finished_growth.seven_observed_gap,
+                  finished_growth.eight_observed_gap,
+                  finished_growth.all_observed_gap,
+                  finished_growth.recommended_panel,
+                  finished_growth.actual_financial_start_dt,
+                  finished_growth.actual_financial_end_dt,
+                  finished_growth.actual_yago_financial_start_dt,
+                  finished_growth.actual_yago_financial_end_dt,
+                  finished_growth.actual_two_yago_financial_start_dt,
+                  finished_growth.actual_two_yago_financial_end_dt,
+                  finished_growth.observed_gap,
+                  q_nums.quarter_number,
+                  date_diff(finished_growth.actual_financial_end_dt, finished_growth.actual_financial_start_dt, day) + 1 as current_qtr_length,
+                  date_diff(finished_growth.actual_yago_financial_end_dt, finished_growth.actual_yago_financial_start_dt, day) + 1 as yago_qtr_length,
+                  date_diff(finished_growth.actual_two_yago_financial_end_dt, finished_growth.actual_two_yago_financial_start_dt, day) + 1 as two_yago_qtr_length,
+                  date_diff(finished_growth.financial_end_dt, finished_growth.financial_start_dt, day) + 1 as days_into_quarter
+
+        FROM
+
+        (
+
+        SELECT *,
+
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+
+        FROM
+
+            (SELECT current_spend.row,
+                    current_spend.symbol,
+                    current_spend.merger_type,
+                    current_spend.panel_type,
+                    current_spend.cardtype,
+                    current_spend.cardtype_include,
+                    current_spend.panel_method,
+                    current_spend.period,
+                    current_spend.yago_period,
+                    current_spend.financial_start_dt,
+                    current_spend.financial_end_dt,
+                    current_spend.yago_financial_start_dt,
+                    current_spend.yago_financial_end_dt,
+                    current_spend.reported_sales,
+                    current_spend.yago_reported_sales,
+                    current_spend.reported_growth,
+                    current_spend.spend,
+                    yago_spend.spend as yago_spend,
+                    current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                    current_spend.latest_reported_num,
+
+                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+
+
+                    CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                    current_spend.actual_financial_start_dt,
+                    current_spend.actual_financial_end_dt,
+                    current_spend.actual_yago_financial_start_dt,
+                    current_spend.actual_yago_financial_end_dt,
+                    current_spend.actual_two_yago_financial_start_dt,
+                    current_spend.actual_two_yago_financial_end_dt,
+                    current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+
+                    FROM
+
+                        (SELECT financials.row,
+                                financials.symbol,
+                                current_spend.merger_type,
+                                current_spend.panel_type,
+                                current_spend.cardtype,
+                                current_spend.cardtype_include,
+                                current_spend.panel_method,
+                                financials.period,
+                                financials.yago_period,
+                                financials.financial_start_dt,
+                                financials.financial_end_dt,
+                                financials.yago_financial_start_dt,
+                                financials.yago_financial_end_dt,
+                                financials.reported_sales,
+                                financials.yago_reported_sales ,
+                                sum(current_spend.spend_amount) as spend,
+
+                                financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                financials.latest_reported_num,
+                                financials.actual_financial_start_dt,
+                                financials.actual_financial_end_dt,
+                                financials.actual_yago_financial_start_dt,
+                                financials.actual_yago_financial_end_dt,
+                                financials.actual_two_yago_financial_start_dt,
+                                financials.actual_two_yago_financial_end_dt
+
+                         FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                         LEFT JOIN (select
+                                        p.symbol
+                                        , "CREDIT + DEBIT" as cardtype
+                                        , p.trans_date
+                                        , "M&A" as merger_type
+                                        , "CONSTIND" as panel_type
+                                        , sd.panel_method
+                                        , sd.cardtype_include
+                                        , round(p.spend_amount,2) as spend_amount
+
+                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                    inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                    on p.symbol = sb.symbol
+                                    and p.brand_id = sb.brand_id
+                                    and p.trans_date between sb.start_date and sb.end_date
+                                    left join (SELECT distinct symbol, panel_method, cardtype_include
+                                               FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                    on p.symbol = sd.symbol) current_spend
+
+                         on financials.symbol = current_spend.symbol
+                         and current_spend.trans_date between financials.financial_start_dt and financials.financial_end_dt
+
+                         GROUP BY financials.row,
+                                  financials.symbol,
+                                  current_spend.merger_type,
+                                  current_spend.panel_type,
+                                  current_spend.cardtype,
+                                  current_spend.cardtype_include,
+                                  current_spend.panel_method,
+                                  financials.period,
+                                  financials.yago_period,
+                                  financials.financial_start_dt,
+                                  financials.financial_end_dt,
+                                  financials.yago_financial_start_dt,
+                                  financials.yago_financial_end_dt,
+                                  financials.reported_sales,
+                                  financials.yago_reported_sales,
+                                  financials.latest_reported_num,
+                                  financials.actual_financial_start_dt,
+                                  financials.actual_financial_end_dt,
+                                  financials.actual_yago_financial_start_dt,
+                                  financials.actual_yago_financial_end_dt,
+                                  financials.actual_two_yago_financial_start_dt,
+                                  financials.actual_two_yago_financial_end_dt
+
+                         ORDER BY symbol, period) current_spend
+
+                    LEFT JOIN (SELECT financials.row,
+                                      financials.symbol,
+                                      current_spend.merger_type,
+                                      current_spend.panel_type,
+                                      current_spend.cardtype,
+                                      current_spend.cardtype_include,
+                                      current_spend.panel_method,
+                                      financials.period,
+                                      financials.yago_period,
+                                      financials.financial_start_dt,
+                                      financials.financial_end_dt,
+                                      financials.yago_financial_start_dt,
+                                      financials.yago_financial_end_dt,
+                                      financials.reported_sales,
+                                      financials.yago_reported_sales ,
+                                      sum(current_spend.spend_amount) as spend,
+
+                                      financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                      financials.actual_financial_start_dt,
+                                      financials.actual_financial_end_dt,
+                                      financials.actual_yago_financial_start_dt,
+                                      financials.actual_yago_financial_end_dt
+
+                              FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                              LEFT JOIN (select
+                                              p.symbol
+                                              , "CREDIT + DEBIT" as cardtype
+                                              , p.trans_date
+                                              , "M&A" as merger_type
+                                              , "CONSTIND" as panel_type
+                                              , sd.panel_method
+                                              , sd.cardtype_include
+                                              , round(p.spend_amount,2) as spend_amount
+
+                                         from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                         inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                     FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                         on p.symbol = sb.symbol
+                                         and p.brand_id = sb.brand_id
+                                         and p.trans_date between sb.start_date and sb.end_date
+                                         left join (SELECT distinct symbol, panel_method, cardtype_include
+                                                    FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                         on p.symbol = sd.symbol) current_spend
+
+                              on financials.symbol = current_spend.symbol
+                              and current_spend.trans_date between financials.yago_financial_start_dt and financials.yago_financial_end_dt
+
+                              GROUP BY financials.row,
+                                       financials.symbol,
+                                       current_spend.merger_type,
+                                       current_spend.panel_type,
+                                       current_spend.cardtype,
+                                       current_spend.cardtype_include,
+                                       current_spend.panel_method,
+                                       financials.period,
+                                       financials.yago_period,
+                                       financials.financial_start_dt,
+                                       financials.financial_end_dt,
+                                       financials.yago_financial_start_dt,
+                                       financials.yago_financial_end_dt,
+                                       financials.reported_sales,
+                                       financials.yago_reported_sales,
+                                       financials.actual_financial_start_dt,
+                                       financials.actual_financial_end_dt,
+                                       financials.actual_yago_financial_start_dt,
+                                       financials.actual_yago_financial_end_dt
+
+                              ORDER BY symbol, period) yago_spend
+
+                    on current_spend.symbol = yago_spend.symbol
+                    and current_spend.cardtype = yago_spend.cardtype
+                    and current_spend.period = yago_spend.period)
+
+            #############################################################
+            UNION ALL
+            #############################################################
+
+        SELECT *,
+
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+
+        FROM
+
+              (SELECT current_spend.row,
+                      current_spend.symbol,
+                      current_spend.merger_type,
+                      current_spend.panel_type,
+                      current_spend.cardtype,
+                      current_spend.cardtype_include,
+                      current_spend.panel_method,
+                      current_spend.period,
+                      current_spend.yago_period,
+                      current_spend.financial_start_dt,
+                      current_spend.financial_end_dt,
+                      current_spend.yago_financial_start_dt,
+                      current_spend.yago_financial_end_dt,
+                      current_spend.reported_sales,
+                      current_spend.yago_reported_sales,
+                      current_spend.reported_growth,
+                      current_spend.spend,
+                      yago_spend.spend as yago_spend,
+                      current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                      current_spend.latest_reported_num,
+
+                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+
+
+                      CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                      current_spend.actual_financial_start_dt,
+                      current_spend.actual_financial_end_dt,
+                      current_spend.actual_yago_financial_start_dt,
+                      current_spend.actual_yago_financial_end_dt,
+                      current_spend.actual_two_yago_financial_start_dt,
+                      current_spend.actual_two_yago_financial_end_dt,
+                      current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+
+                      FROM
+
+                          (SELECT financials.row,
+                                  financials.symbol,
+                                  current_spend.merger_type,
+                                  current_spend.panel_type,
+                                  current_spend.cardtype,
+                                  current_spend.cardtype_include,
+                                  current_spend.panel_method,
+                                  financials.period,
+                                  financials.yago_period,
+                                  financials.financial_start_dt,
+                                  financials.financial_end_dt,
+                                  financials.yago_financial_start_dt,
+                                  financials.yago_financial_end_dt,
+                                  financials.reported_sales,
+                                  financials.yago_reported_sales ,
+                                  sum(current_spend.spend_amount) as spend,
+
+                                  financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                  financials.latest_reported_num,
+                                  financials.actual_financial_start_dt,
+                                  financials.actual_financial_end_dt,
+                                  financials.actual_yago_financial_start_dt,
+                                  financials.actual_yago_financial_end_dt,
+                                  financials.actual_two_yago_financial_start_dt,
+                                  financials.actual_two_yago_financial_end_dt
+
+                          FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                          LEFT JOIN (select
+                                          p.symbol
+                                          , "CREDIT" as cardtype
+                                          , p.trans_date
+                                          , "M&A" as merger_type
+                                          , "CONSTIND" as panel_type
+                                          , sd.panel_method
+                                          , sd.cardtype_include
+                                          , round(p.spend_amount,2) as spend_amount
+
+                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                    inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                    on p.symbol = sb.symbol
+                                    and p.brand_id = sb.brand_id
+                                    and p.trans_date between sb.start_date and sb.end_date
+                                    left join (SELECT distinct symbol, panel_method, cardtype_include
+                                              FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                    on p.symbol = sd.symbol
+
+                                    WHERE cardtype = "CREDIT") current_spend
+
+                          on financials.symbol = current_spend.symbol
+                          and current_spend.trans_date between financials.financial_start_dt and financials.financial_end_dt
+
+                          GROUP BY financials.row,
+                                   financials.symbol,
+                                   current_spend.merger_type,
+                                   current_spend.panel_type,
+                                   current_spend.cardtype,
+                                   current_spend.cardtype_include,
+                                   current_spend.panel_method,
+                                   financials.period,
+                                   financials.yago_period,
+                                   financials.financial_start_dt,
+                                   financials.financial_end_dt,
+                                   financials.yago_financial_start_dt,
+                                   financials.yago_financial_end_dt,
+                                   financials.reported_sales,
+                                   financials.yago_reported_sales,
+                                   financials.latest_reported_num,
+                                   financials.actual_financial_start_dt,
+                                   financials.actual_financial_end_dt,
+                                   financials.actual_yago_financial_start_dt,
+                                   financials.actual_yago_financial_end_dt,
+                                   financials.actual_two_yago_financial_start_dt,
+                                   financials.actual_two_yago_financial_end_dt
+
+                          ORDER BY symbol, period) current_spend
+
+        LEFT JOIN (SELECT financials.row,
+                          financials.symbol,
+                          current_spend.merger_type,
+                          current_spend.panel_type,
+                          current_spend.cardtype,
+                          current_spend.cardtype_include,
+                          current_spend.panel_method,
+                          financials.period,
+                          financials.yago_period,
+                          financials.financial_start_dt,
+                          financials.financial_end_dt,
+                          financials.yago_financial_start_dt,
+                          financials.yago_financial_end_dt,
+                          financials.reported_sales,
+                          financials.yago_reported_sales ,
+                          sum(current_spend.spend_amount) as spend,
+
+                          financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                          financials.actual_financial_start_dt,
+                          financials.actual_financial_end_dt,
+                          financials.actual_yago_financial_start_dt,
+                          financials.actual_yago_financial_end_dt,
+                          financials.actual_two_yago_financial_start_dt,
+                          financials.actual_two_yago_financial_end_dt
+
+                  FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                  LEFT JOIN (select
+                                  p.symbol
+                                  , "CREDIT" as cardtype
+                                  , p.trans_date
+                                  , "M&A" as merger_type
+                                  , "CONSTIND" as panel_type
+                                  , sd.panel_method
+                                  , sd.cardtype_include
+                                  , round(p.spend_amount,2) as spend_amount
+
+                              from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                              inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                          FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                              on p.symbol = sb.symbol
+                              and p.brand_id = sb.brand_id
+                              and p.trans_date between sb.start_date and sb.end_date
+                              left join (SELECT distinct symbol, panel_method, cardtype_include
+                                        FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                              on p.symbol = sd.symbol
+
+                              WHERE cardtype = "CREDIT") current_spend
+
+                  on financials.symbol = current_spend.symbol
+                  and current_spend.trans_date between financials.yago_financial_start_dt and financials.yago_financial_end_dt
+
+                  GROUP BY financials.row,
+                           financials.symbol,
+                           current_spend.merger_type,
+                           current_spend.panel_type,
+                           current_spend.cardtype,
+                           current_spend.cardtype_include,
+                           current_spend.panel_method,
+                           financials.period,
+                           financials.yago_period,
+                           financials.financial_start_dt,
+                           financials.financial_end_dt,
+                           financials.yago_financial_start_dt,
+                           financials.yago_financial_end_dt,
+                           financials.reported_sales,
+                           financials.yago_reported_sales,
+                           financials.actual_financial_start_dt,
+                           financials.actual_financial_end_dt,
+                           financials.actual_yago_financial_start_dt,
+                           financials.actual_yago_financial_end_dt,
+                           financials.actual_two_yago_financial_start_dt,
+                           financials.actual_two_yago_financial_end_dt
+
+                  ORDER BY symbol, period) yago_spend
+
+        on current_spend.symbol = yago_spend.symbol
+        and current_spend.cardtype = yago_spend.cardtype
+        and current_spend.period = yago_spend.period)
+
+            #############################################################
+            UNION ALL
+            #############################################################
+
+        SELECT *,
+
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+
+        FROM
+
+            (SELECT current_spend.row,
+                    current_spend.symbol,
+                    current_spend.merger_type,
+                    current_spend.panel_type,
+                    current_spend.cardtype,
+                    current_spend.cardtype_include,
+                    current_spend.panel_method,
+                    current_spend.period,
+                    current_spend.yago_period,
+                    current_spend.financial_start_dt,
+                    current_spend.financial_end_dt,
+                    current_spend.yago_financial_start_dt,
+                    current_spend.yago_financial_end_dt,
+                    current_spend.reported_sales,
+                    current_spend.yago_reported_sales,
+                    current_spend.reported_growth,
+                    current_spend.spend,
+                    yago_spend.spend as yago_spend,
+                    current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                    current_spend.latest_reported_num,
+
+                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+
+
+                    CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                    current_spend.actual_financial_start_dt,
+                    current_spend.actual_financial_end_dt,
+                    current_spend.actual_yago_financial_start_dt,
+                    current_spend.actual_yago_financial_end_dt,
+                    current_spend.actual_two_yago_financial_start_dt,
+                    current_spend.actual_two_yago_financial_end_dt,
+                    current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+
+                    FROM
+
+                          (SELECT financials.row,
+                                financials.symbol,
+                                current_spend.merger_type,
+                                current_spend.panel_type,
+                                current_spend.cardtype,
+                                current_spend.cardtype_include,
+                                current_spend.panel_method,
+                                financials.period,
+                                financials.yago_period,
+                                financials.financial_start_dt,
+                                financials.financial_end_dt,
+                                financials.yago_financial_start_dt,
+                                financials.yago_financial_end_dt,
+                                financials.reported_sales,
+                                financials.yago_reported_sales ,
+                                sum(current_spend.spend_amount) as spend,
+
+                                financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                financials.latest_reported_num,
+                                financials.actual_financial_start_dt,
+                                financials.actual_financial_end_dt,
+                                financials.actual_yago_financial_start_dt,
+                                financials.actual_yago_financial_end_dt,
+                                financials.actual_two_yago_financial_start_dt,
+                                financials.actual_two_yago_financial_end_dt
+
+                          FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                          LEFT JOIN (select
+                                        p.symbol
+                                        , "DEBIT" as cardtype
+                                        , p.trans_date
+                                        , "M&A" as merger_type
+                                        , "CONSTIND" as panel_type
+                                        , sd.panel_method
+                                        , sd.cardtype_include
+                                        , round(p.spend_amount,2) as spend_amount
+
+                                  from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                  inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                              FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                  on p.symbol = sb.symbol
+                                  and p.brand_id = sb.brand_id
+                                  and p.trans_date between sb.start_date and sb.end_date
+                                  left join (SELECT distinct symbol, panel_method, cardtype_include
+                                            FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                  on p.symbol = sd.symbol
+
+                                  WHERE cardtype = "DEBIT") current_spend
+
+                          on financials.symbol = current_spend.symbol
+                          and current_spend.trans_date between financials.financial_start_dt and financials.financial_end_dt
+
+                          GROUP BY financials.row,
+                                 financials.symbol,
+                                 current_spend.merger_type,
+                                 current_spend.panel_type,
+                                 current_spend.cardtype,
+                                 current_spend.cardtype_include,
+                                 current_spend.panel_method,
+                                 financials.period,
+                                 financials.yago_period,
+                                 financials.financial_start_dt,
+                                 financials.financial_end_dt,
+                                 financials.yago_financial_start_dt,
+                                 financials.yago_financial_end_dt,
+                                 financials.reported_sales,
+                                 financials.yago_reported_sales,
+                                 financials.latest_reported_num,
+                                 financials.actual_financial_start_dt,
+                                 financials.actual_financial_end_dt,
+                                 financials.actual_yago_financial_start_dt,
+                                 financials.actual_yago_financial_end_dt,
+                                 financials.actual_two_yago_financial_start_dt,
+                                 financials.actual_two_yago_financial_end_dt
+
+                          ORDER BY symbol, period) current_spend
+
+                    LEFT JOIN (SELECT financials.row,
+                                      financials.symbol,
+                                      current_spend.merger_type,
+                                      current_spend.panel_type,
+                                      current_spend.cardtype,
+                                      current_spend.cardtype_include,
+                                      current_spend.panel_method,
+                                      financials.period,
+                                      financials.yago_period,
+                                      financials.financial_start_dt,
+                                      financials.financial_end_dt,
+                                      financials.yago_financial_start_dt,
+                                      financials.yago_financial_end_dt,
+                                      financials.reported_sales,
+                                      financials.yago_reported_sales ,
+                                      sum(current_spend.spend_amount) as spend,
+
+                                      financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                      financials.actual_financial_start_dt,
+                                      financials.actual_financial_end_dt,
+                                      financials.actual_yago_financial_start_dt,
+                                      financials.actual_yago_financial_end_dt
+
+                                FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                                LEFT JOIN (select
+                                              p.symbol
+                                              , "DEBIT" as cardtype
+                                              , p.trans_date
+                                              , "M&A" as merger_type
+                                              , "CONSTIND" as panel_type
+                                              , sd.panel_method
+                                              , sd.cardtype_include
+                                              , round(p.spend_amount,2) as spend_amount
+
+                                        from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                        inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                    FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                        on p.symbol = sb.symbol
+                                        and p.brand_id = sb.brand_id
+                                        and p.trans_date between sb.start_date and sb.end_date
+                                        left join (SELECT distinct symbol, panel_method, cardtype_include
+                                                  FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                        on p.symbol = sd.symbol
+
+                                        WHERE cardtype = "DEBIT") current_spend
+
+                                on financials.symbol = current_spend.symbol
+                                and current_spend.trans_date between financials.yago_financial_start_dt and financials.yago_financial_end_dt
+
+                                GROUP BY financials.row,
+                                         financials.symbol,
+                                         current_spend.merger_type,
+                                         current_spend.panel_type,
+                                         current_spend.cardtype,
+                                         current_spend.cardtype_include,
+                                         current_spend.panel_method,
+                                         financials.period,
+                                         financials.yago_period,
+                                         financials.financial_start_dt,
+                                         financials.financial_end_dt,
+                                         financials.yago_financial_start_dt,
+                                         financials.yago_financial_end_dt,
+                                         financials.reported_sales,
+                                         financials.yago_reported_sales,
+                                         financials.actual_financial_start_dt,
+                                         financials.actual_financial_end_dt,
+                                         financials.actual_yago_financial_start_dt,
+                                         financials.actual_yago_financial_end_dt
+
+                                ORDER BY symbol, period) yago_spend
+
+                    on current_spend.symbol = yago_spend.symbol
+                    and current_spend.cardtype = yago_spend.cardtype
+                    and current_spend.period = yago_spend.period)
+
+            #############################################################
+            UNION ALL
+            #############################################################
+
+        SELECT *,
+
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+
+        FROM
+
+              (SELECT current_spend.row,
+                      current_spend.symbol,
+                      current_spend.merger_type,
+                      current_spend.panel_type,
+                      current_spend.cardtype,
+                      current_spend.cardtype_include,
+                      current_spend.panel_method,
+                      current_spend.period,
+                      current_spend.yago_period,
+                      current_spend.financial_start_dt,
+                      current_spend.financial_end_dt,
+                      current_spend.yago_financial_start_dt,
+                      current_spend.yago_financial_end_dt,
+                      current_spend.reported_sales,
+                      current_spend.yago_reported_sales,
+                      current_spend.reported_growth,
+                      current_spend.spend,
+                      yago_spend.spend as yago_spend,
+                      current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                      current_spend.latest_reported_num,
+
+                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+
+
+                      CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                      current_spend.actual_financial_start_dt,
+                      current_spend.actual_financial_end_dt,
+                      current_spend.actual_yago_financial_start_dt,
+                      current_spend.actual_yago_financial_end_dt,
+                      current_spend.actual_two_yago_financial_start_dt,
+                      current_spend.actual_two_yago_financial_end_dt,
+                      current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+
+              FROM
+
+                    (SELECT financials.row,
+                            financials.symbol,
+                            current_spend.merger_type,
+                            current_spend.panel_type,
+                            current_spend.cardtype,
+                            current_spend.cardtype_include,
+                            current_spend.panel_method,
+                            financials.period,
+                            financials.yago_period,
+                            financials.financial_start_dt,
+                            financials.financial_end_dt,
+                            financials.yago_financial_start_dt,
+                            financials.yago_financial_end_dt,
+                            financials.reported_sales,
+                            financials.yago_reported_sales ,
+                            sum(current_spend.spend_amount) as spend,
+
+                            financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                            financials.latest_reported_num,
+                            financials.actual_financial_start_dt,
+                            financials.actual_financial_end_dt,
+                            financials.actual_yago_financial_start_dt,
+                            financials.actual_yago_financial_end_dt,
+                            financials.actual_two_yago_financial_start_dt,
+                            financials.actual_two_yago_financial_end_dt
+
+                    FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                    LEFT JOIN (SELECT *
+                               FROM
+
+                                    (select p.symbol
+                                            , "RECOMMENDED" as cardtype
+                                            , p.trans_date
+                                            , "M&A" as merger_type
+                                            , "CONSTIND" as panel_type
+                                            , sd.panel_method
+                                            , sd.cardtype_include
+                                            , round(p.spend_amount,2) as spend_amount
+                                            , CASE WHEN cardtype_include = "CREDIT_DEBIT" THEN 1 WHEN cardtype = cardtype_include THEN 1 ELSE 0 END as recommended_cardtype
+
+                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                    inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                    on p.symbol = sb.symbol
+                                    and p.brand_id = sb.brand_id
+                                    and p.trans_date between sb.start_date and sb.end_date
+                                    left join (SELECT distinct symbol, panel_method, cardtype_include
+                                               FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                    on p.symbol = sd.symbol)
+
+                               WHERE recommended_cardtype = 1) current_spend
+
+                    on financials.symbol = current_spend.symbol
+                    and current_spend.trans_date between financials.financial_start_dt and financials.financial_end_dt
+
+                    GROUP BY financials.row,
+                             financials.symbol,
+                             current_spend.merger_type,
+                             current_spend.panel_type,
+                             current_spend.cardtype,
+                             current_spend.cardtype_include,
+                             current_spend.panel_method,
+                             financials.period,
+                             financials.yago_period,
+                             financials.financial_start_dt,
+                             financials.financial_end_dt,
+                             financials.yago_financial_start_dt,
+                             financials.yago_financial_end_dt,
+                             financials.reported_sales,
+                             financials.yago_reported_sales,
+                             financials.latest_reported_num,
+                             financials.actual_financial_start_dt,
+                             financials.actual_financial_end_dt,
+                             financials.actual_yago_financial_start_dt,
+                             financials.actual_yago_financial_end_dt,
+                             financials.actual_two_yago_financial_start_dt,
+                             financials.actual_two_yago_financial_end_dt
+
+                    ORDER BY symbol, period) current_spend
+
+              LEFT JOIN (SELECT financials.row,
+                                financials.symbol,
+                                current_spend.merger_type,
+                                current_spend.panel_type,
+                                current_spend.cardtype,
+                                current_spend.cardtype_include,
+                                current_spend.panel_method,
+                                financials.period,
+                                financials.yago_period,
+                                financials.financial_start_dt,
+                                financials.financial_end_dt,
+                                financials.yago_financial_start_dt,
+                                financials.yago_financial_end_dt,
+                                financials.reported_sales,
+                                financials.yago_reported_sales ,
+                                sum(current_spend.spend_amount) as spend,
+
+                                financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                financials.actual_financial_start_dt,
+                                financials.actual_financial_end_dt,
+                                financials.actual_yago_financial_start_dt,
+                                financials.actual_yago_financial_end_dt
+
+                        FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                        LEFT JOIN (SELECT *
+                                  FROM
+
+                                          (select
+                                                p.symbol
+                                                , "RECOMMENDED" as cardtype
+                                                , p.trans_date
+                                                , "M&A" as merger_type
+                                                , "CONSTIND" as panel_type
+                                                , sd.panel_method
+                                                , sd.cardtype_include
+                                                , round(p.spend_amount,2) as spend_amount
+                                                , CASE WHEN cardtype_include = "CREDIT_DEBIT" THEN 1 WHEN cardtype = cardtype_include THEN 1 ELSE 0 END as recommended_cardtype
+
+                                          from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                          inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                      FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                          on p.symbol = sb.symbol
+                                          and p.brand_id = sb.brand_id
+                                          and p.trans_date between sb.start_date and sb.end_date
+                                          left join (SELECT distinct symbol, panel_method, cardtype_include
+                                                    FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                          on p.symbol = sd.symbol)
+
+                                  WHERE recommended_cardtype = 1) current_spend
+
+                        on financials.symbol = current_spend.symbol
+                        and current_spend.trans_date between financials.yago_financial_start_dt and financials.yago_financial_end_dt
+
+                        GROUP BY financials.row,
+                                 financials.symbol,
+                                 current_spend.merger_type,
+                                 current_spend.panel_type,
+                                 current_spend.cardtype,
+                                 current_spend.cardtype_include,
+                                 current_spend.panel_method, financials.period, financials.yago_period, financials.financial_start_dt, financials.financial_end_dt, financials.yago_financial_start_dt, financials.yago_financial_end_dt, financials.reported_sales, financials.yago_reported_sales, financials.actual_financial_start_dt, financials.actual_financial_end_dt, financials.actual_yago_financial_start_dt, financials.actual_yago_financial_end_dt
+
+                        ORDER BY symbol, period) yago_spend
+
+              on current_spend.symbol = yago_spend.symbol
+              and current_spend.cardtype = yago_spend.cardtype
+              and current_spend.period = yago_spend.period)
+
+#############################################################
+            UNION ALL
+            #############################################################
+
+        SELECT *,
+
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+
+        FROM
+
+            (SELECT current_spend.row,
+                    current_spend.symbol,
+                    current_spend.merger_type,
+                    current_spend.panel_type,
+                    current_spend.cardtype,
+                    current_spend.cardtype_include,
+                    current_spend.panel_method,
+                    current_spend.period,
+                    current_spend.yago_period,
+                    current_spend.financial_start_dt,
+                    current_spend.financial_end_dt,
+                    current_spend.yago_financial_start_dt,
+                    current_spend.yago_financial_end_dt,
+                    current_spend.reported_sales,
+                    current_spend.yago_reported_sales,
+                    current_spend.reported_growth,
+                    current_spend.spend,
+                    yago_spend.spend as yago_spend,
+                    current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                    current_spend.latest_reported_num,
+
+                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+
+
+                    CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                    current_spend.actual_financial_start_dt,
+                    current_spend.actual_financial_end_dt,
+                    current_spend.actual_yago_financial_start_dt,
+                    current_spend.actual_yago_financial_end_dt,
+                    current_spend.actual_two_yago_financial_start_dt,
+                    current_spend.actual_two_yago_financial_end_dt,
+                    current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+
+                    FROM
+
+                        (SELECT financials.row,
+                                financials.symbol,
+                                current_spend.merger_type,
+                                current_spend.panel_type,
+                                current_spend.cardtype,
+                                current_spend.cardtype_include,
+                                current_spend.panel_method,
+                                financials.period,
+                                financials.yago_period,
+                                financials.financial_start_dt,
+                                financials.financial_end_dt,
+                                financials.yago_financial_start_dt,
+                                financials.yago_financial_end_dt,
+                                financials.reported_sales,
+                                financials.yago_reported_sales ,
+                                sum(current_spend.spend_amount) as spend,
+
+                                financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                financials.latest_reported_num,
+                                financials.actual_financial_start_dt,
+                                financials.actual_financial_end_dt,
+                                financials.actual_yago_financial_start_dt,
+                                financials.actual_yago_financial_end_dt,
+                                financials.actual_two_yago_financial_start_dt,
+                                financials.actual_two_yago_financial_end_dt
+
+                         FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                         LEFT JOIN (select
+                                        p.symbol
+                                        , "CREDIT + DEBIT" as cardtype
+                                        , p.trans_date
+                                        , "M&A" as merger_type
+                                        , "EMAX" as panel_type
+                                        , sd.panel_method
+                                        , sd.cardtype_include
+                                        , round(p.spend_amount,2) as spend_amount
+
+                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                    inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                    on p.symbol = sb.symbol
+                                    and p.brand_id = sb.brand_id
+                                    and p.trans_date between sb.start_date and sb.end_date
+                                    left join (SELECT distinct symbol, panel_method, cardtype_include
+                                               FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                    on p.symbol = sd.symbol) current_spend
+
+                         on financials.symbol = current_spend.symbol
+                         and current_spend.trans_date between financials.financial_start_dt and financials.financial_end_dt
+
+                         GROUP BY financials.row,
+                                  financials.symbol,
+                                  current_spend.merger_type,
+                                  current_spend.panel_type,
+                                  current_spend.cardtype,
+                                  current_spend.cardtype_include,
+                                  current_spend.panel_method,
+                                  financials.period,
+                                  financials.yago_period,
+                                  financials.financial_start_dt,
+                                  financials.financial_end_dt,
+                                  financials.yago_financial_start_dt,
+                                  financials.yago_financial_end_dt,
+                                  financials.reported_sales,
+                                  financials.yago_reported_sales,
+                                  financials.latest_reported_num,
+                                  financials.actual_financial_start_dt,
+                                  financials.actual_financial_end_dt,
+                                  financials.actual_yago_financial_start_dt,
+                                  financials.actual_yago_financial_end_dt,
+                                  financials.actual_two_yago_financial_start_dt,
+                                  financials.actual_two_yago_financial_end_dt
+
+                         ORDER BY symbol, period) current_spend
+
+                    LEFT JOIN (SELECT financials.row,
+                                      financials.symbol,
+                                      current_spend.merger_type,
+                                      current_spend.panel_type,
+                                      current_spend.cardtype,
+                                      current_spend.cardtype_include,
+                                      current_spend.panel_method,
+                                      financials.period,
+                                      financials.yago_period,
+                                      financials.financial_start_dt,
+                                      financials.financial_end_dt,
+                                      financials.yago_financial_start_dt,
+                                      financials.yago_financial_end_dt,
+                                      financials.reported_sales,
+                                      financials.yago_reported_sales ,
+                                      sum(current_spend.spend_amount) as spend,
+
+                                      financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                      financials.actual_financial_start_dt,
+                                      financials.actual_financial_end_dt,
+                                      financials.actual_yago_financial_start_dt,
+                                      financials.actual_yago_financial_end_dt
+
+                              FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                              LEFT JOIN (select
+                                              p.symbol
+                                              , "CREDIT + DEBIT" as cardtype
+                                              , p.trans_date
+                                              , "M&A" as merger_type
+                                              , "EMAX" as panel_type
+                                              , sd.panel_method
+                                              , sd.cardtype_include
+                                              , round(p.spend_amount,2) as spend_amount
+
+                                         from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                         inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                     FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                         on p.symbol = sb.symbol
+                                         and p.brand_id = sb.brand_id
+                                         and p.trans_date between sb.start_date and sb.end_date
+                                         left join (SELECT distinct symbol, panel_method, cardtype_include
+                                                    FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                         on p.symbol = sd.symbol) current_spend
+
+                              on financials.symbol = current_spend.symbol
+                              and current_spend.trans_date between financials.yago_financial_start_dt and financials.yago_financial_end_dt
+
+                              GROUP BY financials.row,
+                                       financials.symbol,
+                                       current_spend.merger_type,
+                                       current_spend.panel_type,
+                                       current_spend.cardtype,
+                                       current_spend.cardtype_include,
+                                       current_spend.panel_method,
+                                       financials.period,
+                                       financials.yago_period,
+                                       financials.financial_start_dt,
+                                       financials.financial_end_dt,
+                                       financials.yago_financial_start_dt,
+                                       financials.yago_financial_end_dt,
+                                       financials.reported_sales,
+                                       financials.yago_reported_sales,
+                                       financials.actual_financial_start_dt,
+                                       financials.actual_financial_end_dt,
+                                       financials.actual_yago_financial_start_dt,
+                                       financials.actual_yago_financial_end_dt
+
+                              ORDER BY symbol, period) yago_spend
+
+                    on current_spend.symbol = yago_spend.symbol
+                    and current_spend.cardtype = yago_spend.cardtype
+                    and current_spend.period = yago_spend.period)
+
+            #############################################################
+            UNION ALL
+            #############################################################
+
+        SELECT *,
+
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+
+        FROM
+
+              (SELECT current_spend.row,
+                      current_spend.symbol,
+                      current_spend.merger_type,
+                      current_spend.panel_type,
+                      current_spend.cardtype,
+                      current_spend.cardtype_include,
+                      current_spend.panel_method,
+                      current_spend.period,
+                      current_spend.yago_period,
+                      current_spend.financial_start_dt,
+                      current_spend.financial_end_dt,
+                      current_spend.yago_financial_start_dt,
+                      current_spend.yago_financial_end_dt,
+                      current_spend.reported_sales,
+                      current_spend.yago_reported_sales,
+                      current_spend.reported_growth,
+                      current_spend.spend,
+                      yago_spend.spend as yago_spend,
+                      current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                      current_spend.latest_reported_num,
+
+                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+
+
+                      CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                      current_spend.actual_financial_start_dt,
+                      current_spend.actual_financial_end_dt,
+                      current_spend.actual_yago_financial_start_dt,
+                      current_spend.actual_yago_financial_end_dt,
+                      current_spend.actual_two_yago_financial_start_dt,
+                      current_spend.actual_two_yago_financial_end_dt,
+                      current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+
+                      FROM
+
+                          (SELECT financials.row,
+                                  financials.symbol,
+                                  current_spend.merger_type,
+                                  current_spend.panel_type,
+                                  current_spend.cardtype,
+                                  current_spend.cardtype_include,
+                                  current_spend.panel_method,
+                                  financials.period,
+                                  financials.yago_period,
+                                  financials.financial_start_dt,
+                                  financials.financial_end_dt,
+                                  financials.yago_financial_start_dt,
+                                  financials.yago_financial_end_dt,
+                                  financials.reported_sales,
+                                  financials.yago_reported_sales ,
+                                  sum(current_spend.spend_amount) as spend,
+
+                                  financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                  financials.latest_reported_num,
+                                  financials.actual_financial_start_dt,
+                                  financials.actual_financial_end_dt,
+                                  financials.actual_yago_financial_start_dt,
+                                  financials.actual_yago_financial_end_dt,
+                                  financials.actual_two_yago_financial_start_dt,
+                                  financials.actual_two_yago_financial_end_dt
+
+                          FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                          LEFT JOIN (select
+                                          p.symbol
+                                          , "CREDIT" as cardtype
+                                          , p.trans_date
+                                          , "M&A" as merger_type
+                                          , "EMAX" as panel_type
+                                          , sd.panel_method
+                                          , sd.cardtype_include
+                                          , round(p.spend_amount,2) as spend_amount
+
+                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                    inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                    on p.symbol = sb.symbol
+                                    and p.brand_id = sb.brand_id
+                                    and p.trans_date between sb.start_date and sb.end_date
+                                    left join (SELECT distinct symbol, panel_method, cardtype_include
+                                              FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                    on p.symbol = sd.symbol
+
+                                    WHERE cardtype = "CREDIT") current_spend
+
+                          on financials.symbol = current_spend.symbol
+                          and current_spend.trans_date between financials.financial_start_dt and financials.financial_end_dt
+
+                          GROUP BY financials.row,
+                                   financials.symbol,
+                                   current_spend.merger_type,
+                                   current_spend.panel_type,
+                                   current_spend.cardtype,
+                                   current_spend.cardtype_include,
+                                   current_spend.panel_method,
+                                   financials.period,
+                                   financials.yago_period,
+                                   financials.financial_start_dt,
+                                   financials.financial_end_dt,
+                                   financials.yago_financial_start_dt,
+                                   financials.yago_financial_end_dt,
+                                   financials.reported_sales,
+                                   financials.yago_reported_sales,
+                                   financials.latest_reported_num,
+                                   financials.actual_financial_start_dt,
+                                   financials.actual_financial_end_dt,
+                                   financials.actual_yago_financial_start_dt,
+                                   financials.actual_yago_financial_end_dt,
+                                   financials.actual_two_yago_financial_start_dt,
+                                   financials.actual_two_yago_financial_end_dt
+
+                          ORDER BY symbol, period) current_spend
+
+        LEFT JOIN (SELECT financials.row,
+                          financials.symbol,
+                          current_spend.merger_type,
+                          current_spend.panel_type,
+                          current_spend.cardtype,
+                          current_spend.cardtype_include,
+                          current_spend.panel_method,
+                          financials.period,
+                          financials.yago_period,
+                          financials.financial_start_dt,
+                          financials.financial_end_dt,
+                          financials.yago_financial_start_dt,
+                          financials.yago_financial_end_dt,
+                          financials.reported_sales,
+                          financials.yago_reported_sales ,
+                          sum(current_spend.spend_amount) as spend,
+
+                          financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                          financials.actual_financial_start_dt,
+                          financials.actual_financial_end_dt,
+                          financials.actual_yago_financial_start_dt,
+                          financials.actual_yago_financial_end_dt,
+                          financials.actual_two_yago_financial_start_dt,
+                          financials.actual_two_yago_financial_end_dt
+
+                  FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                  LEFT JOIN (select
+                                  p.symbol
+                                  , "CREDIT" as cardtype
+                                  , p.trans_date
+                                  , "M&A" as merger_type
+                                  , "EMAX" as panel_type
+                                  , sd.panel_method
+                                  , sd.cardtype_include
+                                  , round(p.spend_amount,2) as spend_amount
+
+                              from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                              inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                          FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                              on p.symbol = sb.symbol
+                              and p.brand_id = sb.brand_id
+                              and p.trans_date between sb.start_date and sb.end_date
+                              left join (SELECT distinct symbol, panel_method, cardtype_include
+                                        FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                              on p.symbol = sd.symbol
+
+                              WHERE cardtype = "CREDIT") current_spend
+
+                  on financials.symbol = current_spend.symbol
+                  and current_spend.trans_date between financials.yago_financial_start_dt and financials.yago_financial_end_dt
+
+                  GROUP BY financials.row,
+                           financials.symbol,
+                           current_spend.merger_type,
+                           current_spend.panel_type,
+                           current_spend.cardtype,
+                           current_spend.cardtype_include,
+                           current_spend.panel_method,
+                           financials.period,
+                           financials.yago_period,
+                           financials.financial_start_dt,
+                           financials.financial_end_dt,
+                           financials.yago_financial_start_dt,
+                           financials.yago_financial_end_dt,
+                           financials.reported_sales,
+                           financials.yago_reported_sales,
+                           financials.actual_financial_start_dt,
+                           financials.actual_financial_end_dt,
+                           financials.actual_yago_financial_start_dt,
+                           financials.actual_yago_financial_end_dt,
+                           financials.actual_two_yago_financial_start_dt,
+                           financials.actual_two_yago_financial_end_dt
+
+                  ORDER BY symbol, period) yago_spend
+
+        on current_spend.symbol = yago_spend.symbol
+        and current_spend.cardtype = yago_spend.cardtype
+        and current_spend.period = yago_spend.period)
+
+            #############################################################
+            UNION ALL
+            #############################################################
+
+        SELECT *,
+
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+
+        FROM
+
+            (SELECT current_spend.row,
+                    current_spend.symbol,
+                    current_spend.merger_type,
+                    current_spend.panel_type,
+                    current_spend.cardtype,
+                    current_spend.cardtype_include,
+                    current_spend.panel_method,
+                    current_spend.period,
+                    current_spend.yago_period,
+                    current_spend.financial_start_dt,
+                    current_spend.financial_end_dt,
+                    current_spend.yago_financial_start_dt,
+                    current_spend.yago_financial_end_dt,
+                    current_spend.reported_sales,
+                    current_spend.yago_reported_sales,
+                    current_spend.reported_growth,
+                    current_spend.spend,
+                    yago_spend.spend as yago_spend,
+                    current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                    current_spend.latest_reported_num,
+
+                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+
+
+                    CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                    current_spend.actual_financial_start_dt,
+                    current_spend.actual_financial_end_dt,
+                    current_spend.actual_yago_financial_start_dt,
+                    current_spend.actual_yago_financial_end_dt,
+                    current_spend.actual_two_yago_financial_start_dt,
+                    current_spend.actual_two_yago_financial_end_dt,
+                    current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+
+                    FROM
+
+                          (SELECT financials.row,
+                                financials.symbol,
+                                current_spend.merger_type,
+                                current_spend.panel_type,
+                                current_spend.cardtype,
+                                current_spend.cardtype_include,
+                                current_spend.panel_method,
+                                financials.period,
+                                financials.yago_period,
+                                financials.financial_start_dt,
+                                financials.financial_end_dt,
+                                financials.yago_financial_start_dt,
+                                financials.yago_financial_end_dt,
+                                financials.reported_sales,
+                                financials.yago_reported_sales ,
+                                sum(current_spend.spend_amount) as spend,
+
+                                financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                financials.latest_reported_num,
+                                financials.actual_financial_start_dt,
+                                financials.actual_financial_end_dt,
+                                financials.actual_yago_financial_start_dt,
+                                financials.actual_yago_financial_end_dt,
+                                financials.actual_two_yago_financial_start_dt,
+                                financials.actual_two_yago_financial_end_dt
+
+                          FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                          LEFT JOIN (select
+                                        p.symbol
+                                        , "DEBIT" as cardtype
+                                        , p.trans_date
+                                        , "M&A" as merger_type
+                                        , "EMAX" as panel_type
+                                        , sd.panel_method
+                                        , sd.cardtype_include
+                                        , round(p.spend_amount,2) as spend_amount
+
+                                  from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                  inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                              FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                  on p.symbol = sb.symbol
+                                  and p.brand_id = sb.brand_id
+                                  and p.trans_date between sb.start_date and sb.end_date
+                                  left join (SELECT distinct symbol, panel_method, cardtype_include
+                                            FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                  on p.symbol = sd.symbol
+
+                                  WHERE cardtype = "DEBIT") current_spend
+
+                          on financials.symbol = current_spend.symbol
+                          and current_spend.trans_date between financials.financial_start_dt and financials.financial_end_dt
+
+                          GROUP BY financials.row,
+                                 financials.symbol,
+                                 current_spend.merger_type,
+                                 current_spend.panel_type,
+                                 current_spend.cardtype,
+                                 current_spend.cardtype_include,
+                                 current_spend.panel_method,
+                                 financials.period,
+                                 financials.yago_period,
+                                 financials.financial_start_dt,
+                                 financials.financial_end_dt,
+                                 financials.yago_financial_start_dt,
+                                 financials.yago_financial_end_dt,
+                                 financials.reported_sales,
+                                 financials.yago_reported_sales,
+                                 financials.latest_reported_num,
+                                 financials.actual_financial_start_dt,
+                                 financials.actual_financial_end_dt,
+                                 financials.actual_yago_financial_start_dt,
+                                 financials.actual_yago_financial_end_dt,
+                                 financials.actual_two_yago_financial_start_dt,
+                                 financials.actual_two_yago_financial_end_dt
+
+                          ORDER BY symbol, period) current_spend
+
+                    LEFT JOIN (SELECT financials.row,
+                                      financials.symbol,
+                                      current_spend.merger_type,
+                                      current_spend.panel_type,
+                                      current_spend.cardtype,
+                                      current_spend.cardtype_include,
+                                      current_spend.panel_method,
+                                      financials.period,
+                                      financials.yago_period,
+                                      financials.financial_start_dt,
+                                      financials.financial_end_dt,
+                                      financials.yago_financial_start_dt,
+                                      financials.yago_financial_end_dt,
+                                      financials.reported_sales,
+                                      financials.yago_reported_sales ,
+                                      sum(current_spend.spend_amount) as spend,
+
+                                      financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                      financials.actual_financial_start_dt,
+                                      financials.actual_financial_end_dt,
+                                      financials.actual_yago_financial_start_dt,
+                                      financials.actual_yago_financial_end_dt
+
+                                FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                                LEFT JOIN (select
+                                              p.symbol
+                                              , "DEBIT" as cardtype
+                                              , p.trans_date
+                                              , "M&A" as merger_type
+                                              , "EMAX" as panel_type
+                                              , sd.panel_method
+                                              , sd.cardtype_include
+                                              , round(p.spend_amount,2) as spend_amount
+
+                                        from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                        inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                    FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                        on p.symbol = sb.symbol
+                                        and p.brand_id = sb.brand_id
+                                        and p.trans_date between sb.start_date and sb.end_date
+                                        left join (SELECT distinct symbol, panel_method, cardtype_include
+                                                  FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                        on p.symbol = sd.symbol
+
+                                        WHERE cardtype = "DEBIT") current_spend
+
+                                on financials.symbol = current_spend.symbol
+                                and current_spend.trans_date between financials.yago_financial_start_dt and financials.yago_financial_end_dt
+
+                                GROUP BY financials.row,
+                                         financials.symbol,
+                                         current_spend.merger_type,
+                                         current_spend.panel_type,
+                                         current_spend.cardtype,
+                                         current_spend.cardtype_include,
+                                         current_spend.panel_method,
+                                         financials.period,
+                                         financials.yago_period,
+                                         financials.financial_start_dt,
+                                         financials.financial_end_dt,
+                                         financials.yago_financial_start_dt,
+                                         financials.yago_financial_end_dt,
+                                         financials.reported_sales,
+                                         financials.yago_reported_sales,
+                                         financials.actual_financial_start_dt,
+                                         financials.actual_financial_end_dt,
+                                         financials.actual_yago_financial_start_dt,
+                                         financials.actual_yago_financial_end_dt
+
+                                ORDER BY symbol, period) yago_spend
+
+                    on current_spend.symbol = yago_spend.symbol
+                    and current_spend.cardtype = yago_spend.cardtype
+                    and current_spend.period = yago_spend.period)
+
+            #############################################################
+            UNION ALL
+            #############################################################
+
+        SELECT *,
+
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+
+        FROM
+
+              (SELECT current_spend.row,
+                      current_spend.symbol,
+                      current_spend.merger_type,
+                      current_spend.panel_type,
+                      current_spend.cardtype,
+                      current_spend.cardtype_include,
+                      current_spend.panel_method,
+                      current_spend.period,
+                      current_spend.yago_period,
+                      current_spend.financial_start_dt,
+                      current_spend.financial_end_dt,
+                      current_spend.yago_financial_start_dt,
+                      current_spend.yago_financial_end_dt,
+                      current_spend.reported_sales,
+                      current_spend.yago_reported_sales,
+                      current_spend.reported_growth,
+                      current_spend.spend,
+                      yago_spend.spend as yago_spend,
+                      current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                      current_spend.latest_reported_num,
+
+                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+
+
+                      CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                      current_spend.actual_financial_start_dt,
+                      current_spend.actual_financial_end_dt,
+                      current_spend.actual_yago_financial_start_dt,
+                      current_spend.actual_yago_financial_end_dt,
+                      current_spend.actual_two_yago_financial_start_dt,
+                      current_spend.actual_two_yago_financial_end_dt,
+                      current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+
+              FROM
+
+                    (SELECT financials.row,
+                            financials.symbol,
+                            current_spend.merger_type,
+                            current_spend.panel_type,
+                            current_spend.cardtype,
+                            current_spend.cardtype_include,
+                            current_spend.panel_method,
+                            financials.period,
+                            financials.yago_period,
+                            financials.financial_start_dt,
+                            financials.financial_end_dt,
+                            financials.yago_financial_start_dt,
+                            financials.yago_financial_end_dt,
+                            financials.reported_sales,
+                            financials.yago_reported_sales ,
+                            sum(current_spend.spend_amount) as spend,
+
+                            financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                            financials.latest_reported_num,
+                            financials.actual_financial_start_dt,
+                            financials.actual_financial_end_dt,
+                            financials.actual_yago_financial_start_dt,
+                            financials.actual_yago_financial_end_dt,
+                            financials.actual_two_yago_financial_start_dt,
+                            financials.actual_two_yago_financial_end_dt
+
+                    FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                    LEFT JOIN (SELECT *
+                               FROM
+
+                                    (select p.symbol
+                                            , "RECOMMENDED" as cardtype
+                                            , p.trans_date
+                                            , "M&A" as merger_type
+                                            , "EMAX" as panel_type
+                                            , sd.panel_method
+                                            , sd.cardtype_include
+                                            , round(p.spend_amount,2) as spend_amount
+                                            , CASE WHEN cardtype_include = "CREDIT_DEBIT" THEN 1 WHEN cardtype = cardtype_include THEN 1 ELSE 0 END as recommended_cardtype
+
+                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                    inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                    on p.symbol = sb.symbol
+                                    and p.brand_id = sb.brand_id
+                                    and p.trans_date between sb.start_date and sb.end_date
+                                    left join (SELECT distinct symbol, panel_method, cardtype_include
+                                               FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                    on p.symbol = sd.symbol)
+
+                               WHERE recommended_cardtype = 1) current_spend
+
+                    on financials.symbol = current_spend.symbol
+                    and current_spend.trans_date between financials.financial_start_dt and financials.financial_end_dt
+
+                    GROUP BY financials.row,
+                             financials.symbol,
+                             current_spend.merger_type,
+                             current_spend.panel_type,
+                             current_spend.cardtype,
+                             current_spend.cardtype_include,
+                             current_spend.panel_method,
+                             financials.period,
+                             financials.yago_period,
+                             financials.financial_start_dt,
+                             financials.financial_end_dt,
+                             financials.yago_financial_start_dt,
+                             financials.yago_financial_end_dt,
+                             financials.reported_sales,
+                             financials.yago_reported_sales,
+                             financials.latest_reported_num,
+                             financials.actual_financial_start_dt,
+                             financials.actual_financial_end_dt,
+                             financials.actual_yago_financial_start_dt,
+                             financials.actual_yago_financial_end_dt,
+                             financials.actual_two_yago_financial_start_dt,
+                             financials.actual_two_yago_financial_end_dt
+
+                    ORDER BY symbol, period) current_spend
+
+              LEFT JOIN (SELECT financials.row,
+                                financials.symbol,
+                                current_spend.merger_type,
+                                current_spend.panel_type,
+                                current_spend.cardtype,
+                                current_spend.cardtype_include,
+                                current_spend.panel_method,
+                                financials.period,
+                                financials.yago_period,
+                                financials.financial_start_dt,
+                                financials.financial_end_dt,
+                                financials.yago_financial_start_dt,
+                                financials.yago_financial_end_dt,
+                                financials.reported_sales,
+                                financials.yago_reported_sales ,
+                                sum(current_spend.spend_amount) as spend,
+
+                                financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
+                                financials.actual_financial_start_dt,
+                                financials.actual_financial_end_dt,
+                                financials.actual_yago_financial_start_dt,
+                                financials.actual_yago_financial_end_dt
+
+                        FROM ${symbol_financials.SQL_TABLE_NAME} financials
+
+                        LEFT JOIN (SELECT *
+                                  FROM
+
+                                          (select
+                                                p.symbol
+                                                , "RECOMMENDED" as cardtype
+                                                , p.trans_date
+                                                , "M&A" as merger_type
+                                                , "EMAX" as panel_type
+                                                , sd.panel_method
+                                                , sd.cardtype_include
+                                                , round(p.spend_amount,2) as spend_amount
+                                                , CASE WHEN cardtype_include = "CREDIT_DEBIT" THEN 1 WHEN cardtype = cardtype_include THEN 1 ELSE 0 END as recommended_cardtype
+
+                                          from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                          inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
+                                                      FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
+                                          on p.symbol = sb.symbol
+                                          and p.brand_id = sb.brand_id
+                                          and p.trans_date between sb.start_date and sb.end_date
+                                          left join (SELECT distinct symbol, panel_method, cardtype_include
+                                                    FROM ${ground_truth_brand.SQL_TABLE_NAME}) sd
+                                          on p.symbol = sd.symbol)
+
+                                  WHERE recommended_cardtype = 1) current_spend
+
+                        on financials.symbol = current_spend.symbol
+                        and current_spend.trans_date between financials.yago_financial_start_dt and financials.yago_financial_end_dt
+
+                        GROUP BY financials.row,
+                                 financials.symbol,
+                                 current_spend.merger_type,
+                                 current_spend.panel_type,
+                                 current_spend.cardtype,
+                                 current_spend.cardtype_include,
+                                 current_spend.panel_method, financials.period, financials.yago_period, financials.financial_start_dt, financials.financial_end_dt, financials.yago_financial_start_dt, financials.yago_financial_end_dt, financials.reported_sales, financials.yago_reported_sales, financials.actual_financial_start_dt, financials.actual_financial_end_dt, financials.actual_yago_financial_start_dt, financials.actual_yago_financial_end_dt
+
+                        ORDER BY symbol, period) yago_spend
+
+              on current_spend.symbol = yago_spend.symbol
+              and current_spend.cardtype = yago_spend.cardtype
+              and current_spend.period = yago_spend.period)
+
+          ORDER BY symbol, cardtype, period) finished_growth
+
+    LEFT JOIN (SELECT symbol, period, row_number() over(PARTITION BY symbol ORDER BY period DESC) as quarter_number
+
+               FROM
+
+                    (SELECT distinct symbol, period
+                     FROM `ce-cloud-services.ce_transact_uk_daily_signal.dist_period_sym_brand_emax` --replace with _ss table when added
+
+                     WHERE period_type = "QTR"
+
+                     ORDER BY symbol, period DESC)) q_nums
+
+    on q_nums.period = finished_growth.period
+    and q_nums.symbol = finished_growth.symbol
+
+
+    ORDER BY row
+         ;;
+
+      datagroup_trigger: ce_transact_uk_daily_signal_default_datagroup
+    }
+
+    dimension: panel_type {
+      sql: ${TABLE}.panel_type ;;
+    }}
