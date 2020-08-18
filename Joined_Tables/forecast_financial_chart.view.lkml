@@ -19,14 +19,62 @@ view: forecast_financial_chart {
                   finished_growth.reported_sales,
                   finished_growth.yago_reported_sales,
                   finished_growth.reported_growth,
-                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_constind`) and panel_type = "CONSTIND" THEN null
-                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_emax`) and panel_type = "EMAX" THEN null
-                       ELSE finished_growth.spend END as spend,
-                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_constind`) and panel_type = "CONSTIND" THEN null
-                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_emax`) and panel_type = "EMAX" THEN null
-                       ELSE finished_growth.yago_spend END as yago_spend,
-                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_constind`) and panel_type = "CONSTIND" THEN null
-                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_channel_cardtype_emax`) and panel_type = "EMAX" THEN null
+                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.gbp_spend END as gbp_spend,
+                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.usd_spend END as usd_spend,
+                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.eur_spend END as eur_spend,
+                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.cad_spend END as cad_spend,
+                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.dkk_spend END as dkk_spend,
+                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.nok_spend END as nok_spend,
+                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.jpy_spend END as jpy_spend,
+                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.sek_spend END as sek_spend,
+                  CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.pln_spend END as pln_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.yago_gbp_spend END as yago_gbp_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.yago_usd_spend END as yago_usd_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.yago_eur_spend END as yago_eur_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.yago_cad_spend END as yago_cad_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.yago_dkk_spend END as yago_dkk_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.yago_nok_spend END as yago_nok_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.yago_jpy_spend END as yago_jpy_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.yago_sek_spend END as yago_sek_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
+                       ELSE finished_growth.yago_pln_spend END as yago_pln_spend,
+                  CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
+                       WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
                        ELSE finished_growth.estimated_growth END as estimated_growth,
                   finished_growth.latest_reported_num,
                   finished_growth.one_predicted_reported,
@@ -95,20 +143,36 @@ view: forecast_financial_chart {
                     current_spend.reported_sales,
                     current_spend.yago_reported_sales,
                     current_spend.reported_growth,
-                    current_spend.spend,
-                    yago_spend.spend as yago_spend,
-                    current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                    current_spend.gbp_spend,
+                    current_spend.usd_spend,
+                    current_spend.eur_spend,
+                    current_spend.cad_spend,
+                    current_spend.dkk_spend,
+                    current_spend.nok_spend,
+                    current_spend.jpy_spend,
+                    current_spend.sek_spend,
+                    current_spend.pln_spend,
+                    yago_spend.gbp_spend as yago_gbp_spend,
+                    yago_spend.usd_spend as yago_usd_spend,
+                    yago_spend.eur_spend as yago_eur_spend,
+                    yago_spend.cad_spend as yago_cad_spend,
+                    yago_spend.dkk_spend as yago_dkk_spend,
+                    yago_spend.nok_spend as yago_nok_spend,
+                    yago_spend.jpy_spend as yago_jpy_spend,
+                    yago_spend.sek_spend as yago_sek_spend,
+                    yago_spend.pln_spend as yago_pln_spend,
+                    current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
                     current_spend.latest_reported_num,
 
-                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
 
 
                     CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
@@ -118,7 +182,7 @@ view: forecast_financial_chart {
                     current_spend.actual_yago_financial_end_dt,
                     current_spend.actual_two_yago_financial_start_dt,
                     current_spend.actual_two_yago_financial_end_dt,
-                    current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+                    current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
 
                     FROM
 
@@ -137,7 +201,15 @@ view: forecast_financial_chart {
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
                                 financials.yago_reported_sales ,
-                                sum(current_spend.spend_amount) as spend,
+                                sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                sum(current_spend.usd_spend_amount) as usd_spend,
+                                sum(current_spend.cad_spend_amount) as cad_spend,
+                                sum(current_spend.eur_spend_amount) as eur_spend,
+                                sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                sum(current_spend.nok_spend_amount) as nok_spend,
+                                sum(current_spend.sek_spend_amount) as sek_spend,
+                                sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                sum(current_spend.pln_spend_amount) as pln_spend,
 
                                 financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                 financials.latest_reported_num,
@@ -158,9 +230,17 @@ view: forecast_financial_chart {
                                         , "CONSTIND" as panel_type
                                         , sd.panel_method
                                         , sd.cardtype_include
-                                        , round(p.spend_amount,2) as spend_amount
+                                        , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                        , round(p.usd_spend_amount,2) as usd_spend_amount
+                                        , round(p.cad_spend_amount,2) as cad_spend_amount
+                                        , round(p.eur_spend_amount,2) as eur_spend_amount
+                                        , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                        , round(p.nok_spend_amount,2) as nok_spend_amount
+                                        , round(p.sek_spend_amount,2) as sek_spend_amount
+                                        , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                        , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                    from ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME} p
                                     inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                 FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                     on p.symbol = sb.symbol
@@ -213,7 +293,15 @@ view: forecast_financial_chart {
                                       financials.yago_financial_end_dt,
                                       financials.reported_sales,
                                       financials.yago_reported_sales ,
-                                      sum(current_spend.spend_amount) as spend,
+                                      sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                      sum(current_spend.usd_spend_amount) as usd_spend,
+                                      sum(current_spend.cad_spend_amount) as cad_spend,
+                                      sum(current_spend.eur_spend_amount) as eur_spend,
+                                      sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                      sum(current_spend.nok_spend_amount) as nok_spend,
+                                      sum(current_spend.sek_spend_amount) as sek_spend,
+                                      sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                      sum(current_spend.pln_spend_amount) as pln_spend,
 
                                       financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                       financials.actual_financial_start_dt,
@@ -231,9 +319,17 @@ view: forecast_financial_chart {
                                               , "CONSTIND" as panel_type
                                               , sd.panel_method
                                               , sd.cardtype_include
-                                              , round(p.spend_amount,2) as spend_amount
+                                              , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                              , round(p.usd_spend_amount,2) as usd_spend_amount
+                                              , round(p.cad_spend_amount,2) as cad_spend_amount
+                                              , round(p.eur_spend_amount,2) as eur_spend_amount
+                                              , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                              , round(p.nok_spend_amount,2) as nok_spend_amount
+                                              , round(p.sek_spend_amount,2) as sek_spend_amount
+                                              , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                              , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                                         from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                         from ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME} p
                                          inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                      FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                          on p.symbol = sb.symbol
@@ -306,20 +402,36 @@ view: forecast_financial_chart {
                       current_spend.reported_sales,
                       current_spend.yago_reported_sales,
                       current_spend.reported_growth,
-                      current_spend.spend,
-                      yago_spend.spend as yago_spend,
-                      current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                      current_spend.gbp_spend,
+                      current_spend.usd_spend,
+                      current_spend.eur_spend,
+                      current_spend.cad_spend,
+                      current_spend.dkk_spend,
+                      current_spend.nok_spend,
+                      current_spend.jpy_spend,
+                      current_spend.sek_spend,
+                      current_spend.pln_spend,
+                      yago_spend.gbp_spend as yago_gbp_spend,
+                      yago_spend.usd_spend as yago_usd_spend,
+                      yago_spend.eur_spend as yago_eur_spend,
+                      yago_spend.cad_spend as yago_cad_spend,
+                      yago_spend.dkk_spend as yago_dkk_spend,
+                      yago_spend.nok_spend as yago_nok_spend,
+                      yago_spend.jpy_spend as yago_jpy_spend,
+                      yago_spend.sek_spend as yago_sek_spend,
+                      yago_spend.pln_spend as yago_pln_spend,
+                      current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
                       current_spend.latest_reported_num,
 
-                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
 
 
                       CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
@@ -329,7 +441,7 @@ view: forecast_financial_chart {
                       current_spend.actual_yago_financial_end_dt,
                       current_spend.actual_two_yago_financial_start_dt,
                       current_spend.actual_two_yago_financial_end_dt,
-                      current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+                      current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
 
                       FROM
 
@@ -348,7 +460,15 @@ view: forecast_financial_chart {
                                   financials.yago_financial_end_dt,
                                   financials.reported_sales,
                                   financials.yago_reported_sales ,
-                                  sum(current_spend.spend_amount) as spend,
+                                  sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                  sum(current_spend.usd_spend_amount) as usd_spend,
+                                  sum(current_spend.cad_spend_amount) as cad_spend,
+                                  sum(current_spend.eur_spend_amount) as eur_spend,
+                                  sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                  sum(current_spend.nok_spend_amount) as nok_spend,
+                                  sum(current_spend.sek_spend_amount) as sek_spend,
+                                  sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                  sum(current_spend.pln_spend_amount) as pln_spend,
 
                                   financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                   financials.latest_reported_num,
@@ -369,9 +489,17 @@ view: forecast_financial_chart {
                                           , "CONSTIND" as panel_type
                                           , sd.panel_method
                                           , sd.cardtype_include
-                                          , round(p.spend_amount,2) as spend_amount
+                                          , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                          , round(p.usd_spend_amount,2) as usd_spend_amount
+                                          , round(p.cad_spend_amount,2) as cad_spend_amount
+                                          , round(p.eur_spend_amount,2) as eur_spend_amount
+                                          , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                          , round(p.nok_spend_amount,2) as nok_spend_amount
+                                          , round(p.sek_spend_amount,2) as sek_spend_amount
+                                          , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                          , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                    from ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME} p
                                     inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                 FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                     on p.symbol = sb.symbol
@@ -426,7 +554,15 @@ view: forecast_financial_chart {
                           financials.yago_financial_end_dt,
                           financials.reported_sales,
                           financials.yago_reported_sales ,
-                          sum(current_spend.spend_amount) as spend,
+                          sum(current_spend.gbp_spend_amount) as gbp_spend,
+                          sum(current_spend.usd_spend_amount) as usd_spend,
+                          sum(current_spend.cad_spend_amount) as cad_spend,
+                          sum(current_spend.eur_spend_amount) as eur_spend,
+                          sum(current_spend.dkk_spend_amount) as dkk_spend,
+                          sum(current_spend.nok_spend_amount) as nok_spend,
+                          sum(current_spend.sek_spend_amount) as sek_spend,
+                          sum(current_spend.jpy_spend_amount) as jpy_spend,
+                          sum(current_spend.pln_spend_amount) as pln_spend,
 
                           financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                           financials.actual_financial_start_dt,
@@ -446,9 +582,17 @@ view: forecast_financial_chart {
                                   , "CONSTIND" as panel_type
                                   , sd.panel_method
                                   , sd.cardtype_include
-                                  , round(p.spend_amount,2) as spend_amount
+                                  , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                  , round(p.usd_spend_amount,2) as usd_spend_amount
+                                  , round(p.cad_spend_amount,2) as cad_spend_amount
+                                  , round(p.eur_spend_amount,2) as eur_spend_amount
+                                  , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                  , round(p.nok_spend_amount,2) as nok_spend_amount
+                                  , round(p.sek_spend_amount,2) as sek_spend_amount
+                                  , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                  , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                              from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                              from ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME} p
                               inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                           FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                               on p.symbol = sb.symbol
@@ -525,20 +669,36 @@ view: forecast_financial_chart {
                     current_spend.reported_sales,
                     current_spend.yago_reported_sales,
                     current_spend.reported_growth,
-                    current_spend.spend,
-                    yago_spend.spend as yago_spend,
-                    current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                    current_spend.gbp_spend,
+                    current_spend.usd_spend,
+                    current_spend.eur_spend,
+                    current_spend.cad_spend,
+                    current_spend.dkk_spend,
+                    current_spend.nok_spend,
+                    current_spend.jpy_spend,
+                    current_spend.sek_spend,
+                    current_spend.pln_spend,
+                    yago_spend.gbp_spend as yago_gbp_spend,
+                    yago_spend.usd_spend as yago_usd_spend,
+                    yago_spend.eur_spend as yago_eur_spend,
+                    yago_spend.cad_spend as yago_cad_spend,
+                    yago_spend.dkk_spend as yago_dkk_spend,
+                    yago_spend.nok_spend as yago_nok_spend,
+                    yago_spend.jpy_spend as yago_jpy_spend,
+                    yago_spend.sek_spend as yago_sek_spend,
+                    yago_spend.pln_spend as yago_pln_spend,
+                    current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
                     current_spend.latest_reported_num,
 
-                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
 
 
                     CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
@@ -548,7 +708,7 @@ view: forecast_financial_chart {
                     current_spend.actual_yago_financial_end_dt,
                     current_spend.actual_two_yago_financial_start_dt,
                     current_spend.actual_two_yago_financial_end_dt,
-                    current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+                    current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
 
                     FROM
 
@@ -567,7 +727,15 @@ view: forecast_financial_chart {
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
                                 financials.yago_reported_sales ,
-                                sum(current_spend.spend_amount) as spend,
+                                sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                sum(current_spend.usd_spend_amount) as usd_spend,
+                                sum(current_spend.cad_spend_amount) as cad_spend,
+                                sum(current_spend.eur_spend_amount) as eur_spend,
+                                sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                sum(current_spend.nok_spend_amount) as nok_spend,
+                                sum(current_spend.sek_spend_amount) as sek_spend,
+                                sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                sum(current_spend.pln_spend_amount) as pln_spend,
 
                                 financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                 financials.latest_reported_num,
@@ -588,9 +756,17 @@ view: forecast_financial_chart {
                                         , "CONSTIND" as panel_type
                                         , sd.panel_method
                                         , sd.cardtype_include
-                                        , round(p.spend_amount,2) as spend_amount
+                                        , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                        , round(p.usd_spend_amount,2) as usd_spend_amount
+                                        , round(p.cad_spend_amount,2) as cad_spend_amount
+                                        , round(p.eur_spend_amount,2) as eur_spend_amount
+                                        , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                        , round(p.nok_spend_amount,2) as nok_spend_amount
+                                        , round(p.sek_spend_amount,2) as sek_spend_amount
+                                        , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                        , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                                  from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                  from ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME} p
                                   inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                               FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                   on p.symbol = sb.symbol
@@ -645,7 +821,15 @@ view: forecast_financial_chart {
                                       financials.yago_financial_end_dt,
                                       financials.reported_sales,
                                       financials.yago_reported_sales ,
-                                      sum(current_spend.spend_amount) as spend,
+                                      sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                      sum(current_spend.usd_spend_amount) as usd_spend,
+                                      sum(current_spend.cad_spend_amount) as cad_spend,
+                                      sum(current_spend.eur_spend_amount) as eur_spend,
+                                      sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                      sum(current_spend.nok_spend_amount) as nok_spend,
+                                      sum(current_spend.sek_spend_amount) as sek_spend,
+                                      sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                      sum(current_spend.pln_spend_amount) as pln_spend,
 
                                       financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                       financials.actual_financial_start_dt,
@@ -663,9 +847,17 @@ view: forecast_financial_chart {
                                               , "CONSTIND" as panel_type
                                               , sd.panel_method
                                               , sd.cardtype_include
-                                              , round(p.spend_amount,2) as spend_amount
+                                              , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                              , round(p.usd_spend_amount,2) as usd_spend_amount
+                                              , round(p.cad_spend_amount,2) as cad_spend_amount
+                                              , round(p.eur_spend_amount,2) as eur_spend_amount
+                                              , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                              , round(p.nok_spend_amount,2) as nok_spend_amount
+                                              , round(p.sek_spend_amount,2) as sek_spend_amount
+                                              , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                              , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                                        from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                        from ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME} p
                                         inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                     FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                         on p.symbol = sb.symbol
@@ -740,20 +932,36 @@ view: forecast_financial_chart {
                       current_spend.reported_sales,
                       current_spend.yago_reported_sales,
                       current_spend.reported_growth,
-                      current_spend.spend,
-                      yago_spend.spend as yago_spend,
-                      current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                      current_spend.gbp_spend,
+                      current_spend.usd_spend,
+                      current_spend.eur_spend,
+                      current_spend.cad_spend,
+                      current_spend.dkk_spend,
+                      current_spend.nok_spend,
+                      current_spend.jpy_spend,
+                      current_spend.sek_spend,
+                      current_spend.pln_spend,
+                      yago_spend.gbp_spend as yago_gbp_spend,
+                      yago_spend.usd_spend as yago_usd_spend,
+                      yago_spend.eur_spend as yago_eur_spend,
+                      yago_spend.cad_spend as yago_cad_spend,
+                      yago_spend.dkk_spend as yago_dkk_spend,
+                      yago_spend.nok_spend as yago_nok_spend,
+                      yago_spend.jpy_spend as yago_jpy_spend,
+                      yago_spend.sek_spend as yago_sek_spend,
+                      yago_spend.pln_spend as yago_pln_spend,
+                      current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
                       current_spend.latest_reported_num,
 
-                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
 
 
                       CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
@@ -763,7 +971,7 @@ view: forecast_financial_chart {
                       current_spend.actual_yago_financial_end_dt,
                       current_spend.actual_two_yago_financial_start_dt,
                       current_spend.actual_two_yago_financial_end_dt,
-                      current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+                      current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
 
               FROM
 
@@ -782,7 +990,15 @@ view: forecast_financial_chart {
                             financials.yago_financial_end_dt,
                             financials.reported_sales,
                             financials.yago_reported_sales ,
-                            sum(current_spend.spend_amount) as spend,
+                            sum(current_spend.gbp_spend_amount) as gbp_spend,
+                            sum(current_spend.usd_spend_amount) as usd_spend,
+                            sum(current_spend.cad_spend_amount) as cad_spend,
+                            sum(current_spend.eur_spend_amount) as eur_spend,
+                            sum(current_spend.dkk_spend_amount) as dkk_spend,
+                            sum(current_spend.nok_spend_amount) as nok_spend,
+                            sum(current_spend.sek_spend_amount) as sek_spend,
+                            sum(current_spend.jpy_spend_amount) as jpy_spend,
+                            sum(current_spend.pln_spend_amount) as pln_spend,
 
                             financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                             financials.latest_reported_num,
@@ -805,10 +1021,18 @@ view: forecast_financial_chart {
                                             , "CONSTIND" as panel_type
                                             , sd.panel_method
                                             , sd.cardtype_include
-                                            , round(p.spend_amount,2) as spend_amount
+                                            , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                            , round(p.usd_spend_amount,2) as usd_spend_amount
+                                            , round(p.cad_spend_amount,2) as cad_spend_amount
+                                            , round(p.eur_spend_amount,2) as eur_spend_amount
+                                            , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                            , round(p.nok_spend_amount,2) as nok_spend_amount
+                                            , round(p.sek_spend_amount,2) as sek_spend_amount
+                                            , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                            , round(p.pln_spend_amount,2) as pln_spend_amount
                                             , CASE WHEN cardtype_include = "CREDIT_DEBIT" THEN 1 WHEN cardtype = cardtype_include THEN 1 ELSE 0 END as recommended_cardtype
 
-                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                    from ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME} p
                                     inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                 FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                     on p.symbol = sb.symbol
@@ -863,7 +1087,15 @@ view: forecast_financial_chart {
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
                                 financials.yago_reported_sales ,
-                                sum(current_spend.spend_amount) as spend,
+                                sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                sum(current_spend.usd_spend_amount) as usd_spend,
+                                sum(current_spend.cad_spend_amount) as cad_spend,
+                                sum(current_spend.eur_spend_amount) as eur_spend,
+                                sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                sum(current_spend.nok_spend_amount) as nok_spend,
+                                sum(current_spend.sek_spend_amount) as sek_spend,
+                                sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                sum(current_spend.pln_spend_amount) as pln_spend,
 
                                 financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                 financials.actual_financial_start_dt,
@@ -884,10 +1116,18 @@ view: forecast_financial_chart {
                                                 , "CONSTIND" as panel_type
                                                 , sd.panel_method
                                                 , sd.cardtype_include
-                                                , round(p.spend_amount,2) as spend_amount
+                                                , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                                , round(p.usd_spend_amount,2) as usd_spend_amount
+                                                , round(p.cad_spend_amount,2) as cad_spend_amount
+                                                , round(p.eur_spend_amount,2) as eur_spend_amount
+                                                , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                                , round(p.nok_spend_amount,2) as nok_spend_amount
+                                                , round(p.sek_spend_amount,2) as sek_spend_amount
+                                                , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                                , round(p.pln_spend_amount,2) as pln_spend_amount
                                                 , CASE WHEN cardtype_include = "CREDIT_DEBIT" THEN 1 WHEN cardtype = cardtype_include THEN 1 ELSE 0 END as recommended_cardtype
 
-                                          from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_constind` p
+                                          from ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME} p
                                           inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                       FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                           on p.symbol = sb.symbol
@@ -950,20 +1190,36 @@ view: forecast_financial_chart {
                     current_spend.reported_sales,
                     current_spend.yago_reported_sales,
                     current_spend.reported_growth,
-                    current_spend.spend,
-                    yago_spend.spend as yago_spend,
-                    current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                    current_spend.gbp_spend,
+                    current_spend.usd_spend,
+                    current_spend.eur_spend,
+                    current_spend.cad_spend,
+                    current_spend.dkk_spend,
+                    current_spend.nok_spend,
+                    current_spend.jpy_spend,
+                    current_spend.sek_spend,
+                    current_spend.pln_spend,
+                    yago_spend.gbp_spend as yago_gbp_spend,
+                    yago_spend.usd_spend as yago_usd_spend,
+                    yago_spend.eur_spend as yago_eur_spend,
+                    yago_spend.cad_spend as yago_cad_spend,
+                    yago_spend.dkk_spend as yago_dkk_spend,
+                    yago_spend.nok_spend as yago_nok_spend,
+                    yago_spend.jpy_spend as yago_jpy_spend,
+                    yago_spend.sek_spend as yago_sek_spend,
+                    yago_spend.pln_spend as yago_pln_spend,
+                    current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
                     current_spend.latest_reported_num,
 
-                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
 
 
                     CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
@@ -973,7 +1229,7 @@ view: forecast_financial_chart {
                     current_spend.actual_yago_financial_end_dt,
                     current_spend.actual_two_yago_financial_start_dt,
                     current_spend.actual_two_yago_financial_end_dt,
-                    current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+                    current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
 
                     FROM
 
@@ -992,7 +1248,15 @@ view: forecast_financial_chart {
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
                                 financials.yago_reported_sales ,
-                                sum(current_spend.spend_amount) as spend,
+                                sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                sum(current_spend.usd_spend_amount) as usd_spend,
+                                sum(current_spend.cad_spend_amount) as cad_spend,
+                                sum(current_spend.eur_spend_amount) as eur_spend,
+                                sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                sum(current_spend.nok_spend_amount) as nok_spend,
+                                sum(current_spend.sek_spend_amount) as sek_spend,
+                                sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                sum(current_spend.pln_spend_amount) as pln_spend,
 
                                 financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                 financials.latest_reported_num,
@@ -1013,9 +1277,17 @@ view: forecast_financial_chart {
                                         , "EMAX" as panel_type
                                         , sd.panel_method
                                         , sd.cardtype_include
-                                        , round(p.spend_amount,2) as spend_amount
+                                        , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                        , round(p.usd_spend_amount,2) as usd_spend_amount
+                                        , round(p.cad_spend_amount,2) as cad_spend_amount
+                                        , round(p.eur_spend_amount,2) as eur_spend_amount
+                                        , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                        , round(p.nok_spend_amount,2) as nok_spend_amount
+                                        , round(p.sek_spend_amount,2) as sek_spend_amount
+                                        , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                        , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                    from ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME} p
                                     inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                 FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                     on p.symbol = sb.symbol
@@ -1068,7 +1340,15 @@ view: forecast_financial_chart {
                                       financials.yago_financial_end_dt,
                                       financials.reported_sales,
                                       financials.yago_reported_sales ,
-                                      sum(current_spend.spend_amount) as spend,
+                                      sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                      sum(current_spend.usd_spend_amount) as usd_spend,
+                                      sum(current_spend.cad_spend_amount) as cad_spend,
+                                      sum(current_spend.eur_spend_amount) as eur_spend,
+                                      sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                      sum(current_spend.nok_spend_amount) as nok_spend,
+                                      sum(current_spend.sek_spend_amount) as sek_spend,
+                                      sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                      sum(current_spend.pln_spend_amount) as pln_spend,
 
                                       financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                       financials.actual_financial_start_dt,
@@ -1086,9 +1366,17 @@ view: forecast_financial_chart {
                                               , "EMAX" as panel_type
                                               , sd.panel_method
                                               , sd.cardtype_include
-                                              , round(p.spend_amount,2) as spend_amount
+                                              , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                              , round(p.usd_spend_amount,2) as usd_spend_amount
+                                              , round(p.cad_spend_amount,2) as cad_spend_amount
+                                              , round(p.eur_spend_amount,2) as eur_spend_amount
+                                              , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                              , round(p.nok_spend_amount,2) as nok_spend_amount
+                                              , round(p.sek_spend_amount,2) as sek_spend_amount
+                                              , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                              , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                                         from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                         from ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME} p
                                          inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                      FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                          on p.symbol = sb.symbol
@@ -1161,20 +1449,36 @@ view: forecast_financial_chart {
                       current_spend.reported_sales,
                       current_spend.yago_reported_sales,
                       current_spend.reported_growth,
-                      current_spend.spend,
-                      yago_spend.spend as yago_spend,
-                      current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                      current_spend.gbp_spend,
+                      current_spend.usd_spend,
+                      current_spend.eur_spend,
+                      current_spend.cad_spend,
+                      current_spend.dkk_spend,
+                      current_spend.nok_spend,
+                      current_spend.jpy_spend,
+                      current_spend.sek_spend,
+                      current_spend.pln_spend,
+                      yago_spend.gbp_spend as yago_gbp_spend,
+                      yago_spend.usd_spend as yago_usd_spend,
+                      yago_spend.eur_spend as yago_eur_spend,
+                      yago_spend.cad_spend as yago_cad_spend,
+                      yago_spend.dkk_spend as yago_dkk_spend,
+                      yago_spend.nok_spend as yago_nok_spend,
+                      yago_spend.jpy_spend as yago_jpy_spend,
+                      yago_spend.sek_spend as yago_sek_spend,
+                      yago_spend.pln_spend as yago_pln_spend,
+                      current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
                       current_spend.latest_reported_num,
 
-                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
 
 
                       CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
@@ -1184,7 +1488,7 @@ view: forecast_financial_chart {
                       current_spend.actual_yago_financial_end_dt,
                       current_spend.actual_two_yago_financial_start_dt,
                       current_spend.actual_two_yago_financial_end_dt,
-                      current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+                      current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
 
                       FROM
 
@@ -1203,7 +1507,15 @@ view: forecast_financial_chart {
                                   financials.yago_financial_end_dt,
                                   financials.reported_sales,
                                   financials.yago_reported_sales ,
-                                  sum(current_spend.spend_amount) as spend,
+                                  sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                  sum(current_spend.usd_spend_amount) as usd_spend,
+                                  sum(current_spend.cad_spend_amount) as cad_spend,
+                                  sum(current_spend.eur_spend_amount) as eur_spend,
+                                  sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                  sum(current_spend.nok_spend_amount) as nok_spend,
+                                  sum(current_spend.sek_spend_amount) as sek_spend,
+                                  sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                  sum(current_spend.pln_spend_amount) as pln_spend,
 
                                   financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                   financials.latest_reported_num,
@@ -1224,9 +1536,17 @@ view: forecast_financial_chart {
                                           , "EMAX" as panel_type
                                           , sd.panel_method
                                           , sd.cardtype_include
-                                          , round(p.spend_amount,2) as spend_amount
+                                          , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                          , round(p.usd_spend_amount,2) as usd_spend_amount
+                                          , round(p.cad_spend_amount,2) as cad_spend_amount
+                                          , round(p.eur_spend_amount,2) as eur_spend_amount
+                                          , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                          , round(p.nok_spend_amount,2) as nok_spend_amount
+                                          , round(p.sek_spend_amount,2) as sek_spend_amount
+                                          , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                          , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                    from ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME} p
                                     inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                 FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                     on p.symbol = sb.symbol
@@ -1281,7 +1601,15 @@ view: forecast_financial_chart {
                           financials.yago_financial_end_dt,
                           financials.reported_sales,
                           financials.yago_reported_sales ,
-                          sum(current_spend.spend_amount) as spend,
+                          sum(current_spend.gbp_spend_amount) as gbp_spend,
+                          sum(current_spend.usd_spend_amount) as usd_spend,
+                          sum(current_spend.cad_spend_amount) as cad_spend,
+                          sum(current_spend.eur_spend_amount) as eur_spend,
+                          sum(current_spend.dkk_spend_amount) as dkk_spend,
+                          sum(current_spend.nok_spend_amount) as nok_spend,
+                          sum(current_spend.sek_spend_amount) as sek_spend,
+                          sum(current_spend.jpy_spend_amount) as jpy_spend,
+                          sum(current_spend.pln_spend_amount) as pln_spend,
 
                           financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                           financials.actual_financial_start_dt,
@@ -1301,9 +1629,17 @@ view: forecast_financial_chart {
                                   , "EMAX" as panel_type
                                   , sd.panel_method
                                   , sd.cardtype_include
-                                  , round(p.spend_amount,2) as spend_amount
+                                  , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                  , round(p.usd_spend_amount,2) as usd_spend_amount
+                                  , round(p.cad_spend_amount,2) as cad_spend_amount
+                                  , round(p.eur_spend_amount,2) as eur_spend_amount
+                                  , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                  , round(p.nok_spend_amount,2) as nok_spend_amount
+                                  , round(p.sek_spend_amount,2) as sek_spend_amount
+                                  , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                  , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                              from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                              from ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME} p
                               inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                           FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                               on p.symbol = sb.symbol
@@ -1380,20 +1716,36 @@ view: forecast_financial_chart {
                     current_spend.reported_sales,
                     current_spend.yago_reported_sales,
                     current_spend.reported_growth,
-                    current_spend.spend,
-                    yago_spend.spend as yago_spend,
-                    current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                    current_spend.gbp_spend,
+                    current_spend.usd_spend,
+                    current_spend.eur_spend,
+                    current_spend.cad_spend,
+                    current_spend.dkk_spend,
+                    current_spend.nok_spend,
+                    current_spend.jpy_spend,
+                    current_spend.sek_spend,
+                    current_spend.pln_spend,
+                    yago_spend.gbp_spend as yago_gbp_spend,
+                    yago_spend.usd_spend as yago_usd_spend,
+                    yago_spend.eur_spend as yago_eur_spend,
+                    yago_spend.cad_spend as yago_cad_spend,
+                    yago_spend.dkk_spend as yago_dkk_spend,
+                    yago_spend.nok_spend as yago_nok_spend,
+                    yago_spend.jpy_spend as yago_jpy_spend,
+                    yago_spend.sek_spend as yago_sek_spend,
+                    yago_spend.pln_spend as yago_pln_spend,
+                    current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
                     current_spend.latest_reported_num,
 
-                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
+                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
 
 
                     CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
@@ -1403,7 +1755,7 @@ view: forecast_financial_chart {
                     current_spend.actual_yago_financial_end_dt,
                     current_spend.actual_two_yago_financial_start_dt,
                     current_spend.actual_two_yago_financial_end_dt,
-                    current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+                    current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
 
                     FROM
 
@@ -1422,7 +1774,15 @@ view: forecast_financial_chart {
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
                                 financials.yago_reported_sales ,
-                                sum(current_spend.spend_amount) as spend,
+                                sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                sum(current_spend.usd_spend_amount) as usd_spend,
+                                sum(current_spend.cad_spend_amount) as cad_spend,
+                                sum(current_spend.eur_spend_amount) as eur_spend,
+                                sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                sum(current_spend.nok_spend_amount) as nok_spend,
+                                sum(current_spend.sek_spend_amount) as sek_spend,
+                                sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                sum(current_spend.pln_spend_amount) as pln_spend,
 
                                 financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                 financials.latest_reported_num,
@@ -1443,9 +1803,17 @@ view: forecast_financial_chart {
                                         , "EMAX" as panel_type
                                         , sd.panel_method
                                         , sd.cardtype_include
-                                        , round(p.spend_amount,2) as spend_amount
+                                        , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                        , round(p.usd_spend_amount,2) as usd_spend_amount
+                                        , round(p.cad_spend_amount,2) as cad_spend_amount
+                                        , round(p.eur_spend_amount,2) as eur_spend_amount
+                                        , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                        , round(p.nok_spend_amount,2) as nok_spend_amount
+                                        , round(p.sek_spend_amount,2) as sek_spend_amount
+                                        , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                        , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                                  from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                  from ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME} p
                                   inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                               FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                   on p.symbol = sb.symbol
@@ -1500,7 +1868,15 @@ view: forecast_financial_chart {
                                       financials.yago_financial_end_dt,
                                       financials.reported_sales,
                                       financials.yago_reported_sales ,
-                                      sum(current_spend.spend_amount) as spend,
+                                      sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                      sum(current_spend.usd_spend_amount) as usd_spend,
+                                      sum(current_spend.cad_spend_amount) as cad_spend,
+                                      sum(current_spend.eur_spend_amount) as eur_spend,
+                                      sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                      sum(current_spend.nok_spend_amount) as nok_spend,
+                                      sum(current_spend.sek_spend_amount) as sek_spend,
+                                      sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                      sum(current_spend.pln_spend_amount) as pln_spend,
 
                                       financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                       financials.actual_financial_start_dt,
@@ -1518,9 +1894,17 @@ view: forecast_financial_chart {
                                               , "EMAX" as panel_type
                                               , sd.panel_method
                                               , sd.cardtype_include
-                                              , round(p.spend_amount,2) as spend_amount
+                                              , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                              , round(p.usd_spend_amount,2) as usd_spend_amount
+                                              , round(p.cad_spend_amount,2) as cad_spend_amount
+                                              , round(p.eur_spend_amount,2) as eur_spend_amount
+                                              , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                              , round(p.nok_spend_amount,2) as nok_spend_amount
+                                              , round(p.sek_spend_amount,2) as sek_spend_amount
+                                              , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                              , round(p.pln_spend_amount,2) as pln_spend_amount
 
-                                        from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                        from ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME} p
                                         inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                     FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                         on p.symbol = sb.symbol
@@ -1595,20 +1979,36 @@ view: forecast_financial_chart {
                       current_spend.reported_sales,
                       current_spend.yago_reported_sales,
                       current_spend.reported_growth,
-                      current_spend.spend,
-                      yago_spend.spend as yago_spend,
-                      current_spend.spend / yago_spend.spend - 1 as estimated_growth,
+                      current_spend.gbp_spend,
+                      current_spend.usd_spend,
+                      current_spend.eur_spend,
+                      current_spend.cad_spend,
+                      current_spend.dkk_spend,
+                      current_spend.nok_spend,
+                      current_spend.jpy_spend,
+                      current_spend.sek_spend,
+                      current_spend.pln_spend,
+                      yago_spend.gbp_spend as yago_gbp_spend,
+                      yago_spend.usd_spend as yago_usd_spend,
+                      yago_spend.eur_spend as yago_eur_spend,
+                      yago_spend.cad_spend as yago_cad_spend,
+                      yago_spend.dkk_spend as yago_dkk_spend,
+                      yago_spend.nok_spend as yago_nok_spend,
+                      yago_spend.jpy_spend as yago_jpy_spend,
+                      yago_spend.sek_spend as yago_sek_spend,
+                      yago_spend.pln_spend as yago_pln_spend,
+                      current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
                       current_spend.latest_reported_num,
 
-                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as one_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as two_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as three_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as four_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as five_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as six_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as seven_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as eight_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) ELSE null END as all_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
+                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
 
 
                       CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
@@ -1618,7 +2018,7 @@ view: forecast_financial_chart {
                       current_spend.actual_yago_financial_end_dt,
                       current_spend.actual_two_yago_financial_start_dt,
                       current_spend.actual_two_yago_financial_end_dt,
-                      current_spend.reported_growth - (current_spend.spend / yago_spend.spend - 1) as observed_gap
+                      current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
 
               FROM
 
@@ -1637,7 +2037,15 @@ view: forecast_financial_chart {
                             financials.yago_financial_end_dt,
                             financials.reported_sales,
                             financials.yago_reported_sales ,
-                            sum(current_spend.spend_amount) as spend,
+                            sum(current_spend.gbp_spend_amount) as gbp_spend,
+                            sum(current_spend.usd_spend_amount) as usd_spend,
+                            sum(current_spend.cad_spend_amount) as cad_spend,
+                            sum(current_spend.eur_spend_amount) as eur_spend,
+                            sum(current_spend.dkk_spend_amount) as dkk_spend,
+                            sum(current_spend.nok_spend_amount) as nok_spend,
+                            sum(current_spend.sek_spend_amount) as sek_spend,
+                            sum(current_spend.jpy_spend_amount) as jpy_spend,
+                            sum(current_spend.pln_spend_amount) as pln_spend,
 
                             financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                             financials.latest_reported_num,
@@ -1660,10 +2068,18 @@ view: forecast_financial_chart {
                                             , "EMAX" as panel_type
                                             , sd.panel_method
                                             , sd.cardtype_include
-                                            , round(p.spend_amount,2) as spend_amount
+                                            , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                            , round(p.usd_spend_amount,2) as usd_spend_amount
+                                            , round(p.cad_spend_amount,2) as cad_spend_amount
+                                            , round(p.eur_spend_amount,2) as eur_spend_amount
+                                            , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                            , round(p.nok_spend_amount,2) as nok_spend_amount
+                                            , round(p.sek_spend_amount,2) as sek_spend_amount
+                                            , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                            , round(p.pln_spend_amount,2) as pln_spend_amount
                                             , CASE WHEN cardtype_include = "CREDIT_DEBIT" THEN 1 WHEN cardtype = cardtype_include THEN 1 ELSE 0 END as recommended_cardtype
 
-                                    from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                    from ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME} p
                                     inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                 FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                     on p.symbol = sb.symbol
@@ -1718,7 +2134,15 @@ view: forecast_financial_chart {
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
                                 financials.yago_reported_sales ,
-                                sum(current_spend.spend_amount) as spend,
+                                sum(current_spend.gbp_spend_amount) as gbp_spend,
+                                sum(current_spend.usd_spend_amount) as usd_spend,
+                                sum(current_spend.cad_spend_amount) as cad_spend,
+                                sum(current_spend.eur_spend_amount) as eur_spend,
+                                sum(current_spend.dkk_spend_amount) as dkk_spend,
+                                sum(current_spend.nok_spend_amount) as nok_spend,
+                                sum(current_spend.sek_spend_amount) as sek_spend,
+                                sum(current_spend.jpy_spend_amount) as jpy_spend,
+                                sum(current_spend.pln_spend_amount) as pln_spend,
 
                                 financials.reported_sales / financials.yago_reported_sales - 1 as reported_growth,
                                 financials.actual_financial_start_dt,
@@ -1739,10 +2163,18 @@ view: forecast_financial_chart {
                                                 , "EMAX" as panel_type
                                                 , sd.panel_method
                                                 , sd.cardtype_include
-                                                , round(p.spend_amount,2) as spend_amount
+                                                , round(p.gbp_spend_amount,2) as gbp_spend_amount
+                                                , round(p.usd_spend_amount,2) as usd_spend_amount
+                                                , round(p.cad_spend_amount,2) as cad_spend_amount
+                                                , round(p.eur_spend_amount,2) as eur_spend_amount
+                                                , round(p.dkk_spend_amount,2) as dkk_spend_amount
+                                                , round(p.nok_spend_amount,2) as nok_spend_amount
+                                                , round(p.sek_spend_amount,2) as sek_spend_amount
+                                                , round(p.jpy_spend_amount,2) as jpy_spend_amount
+                                                , round(p.pln_spend_amount,2) as pln_spend_amount
                                                 , CASE WHEN cardtype_include = "CREDIT_DEBIT" THEN 1 WHEN cardtype = cardtype_include THEN 1 ELSE 0 END as recommended_cardtype
 
-                                          from `ce-cloud-services.ce_transact_daily_signal.dist_signal2_day_sym_brand_cardtype_emax` p
+                                          from ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME} p
                                           inner join (SELECT distinct symbol, brand_name, brand_id, start_date, end_date
                                                       FROM ${ground_truth_brand.SQL_TABLE_NAME}) sb
                                           on p.symbol = sb.symbol
