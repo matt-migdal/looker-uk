@@ -30,3 +30,5 @@ explore: forecast_date_intervals {}
 explore: forecast_date_sums {}
 
 explore: symbol_financials {}
+
+explore: bu_discover {}
