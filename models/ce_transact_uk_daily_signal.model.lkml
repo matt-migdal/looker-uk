@@ -32,3 +32,5 @@ explore: forecast_date_sums {}
 explore: symbol_financials {}
 
 explore: bu_discover {}
+
+explore: v2_universe_uk_channel_brand_comparison_yyseq_rolling {}
