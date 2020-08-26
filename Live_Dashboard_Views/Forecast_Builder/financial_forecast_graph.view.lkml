@@ -18,8 +18,24 @@ view: financial_forecast_graph {
                                 financial_chart.reported_sales,
                                 financial_chart.yago_reported_sales,
                                 financial_chart.reported_growth,
-                                financial_chart.spend,
-                                financial_chart.yago_spend,
+                                financial_chart.gbp_spend,
+                                financial_chart.usd_spend,
+                                financial_chart.eur_spend,
+                                financial_chart.cad_spend,
+                                financial_chart.dkk_spend,
+                                financial_chart.nok_spend,
+                                financial_chart.jpy_spend,
+                                financial_chart.sek_spend,
+                                financial_chart.pln_spend,
+                                financial_chart.yago_gbp_spend,
+                                financial_chart.yago_usd_spend,
+                                financial_chart.yago_eur_spend,
+                                financial_chart.yago_cad_spend,
+                                financial_chart.yago_dkk_spend,
+                                financial_chart.yago_nok_spend,
+                                financial_chart.yago_jpy_spend,
+                                financial_chart.yago_sek_spend,
+                                financial_chart.yago_pln_spend,
                                 financial_chart.estimated_growth,
                                 financial_chart.latest_reported_num,
                                 financial_chart.recommended_panel,
@@ -82,13 +98,25 @@ view: financial_forecast_graph {
                  LEFT JOIN (SELECT distinct symbol, symbol_id, consensus_period, consensus_metric
                             FROM ${ground_truth_financial.SQL_TABLE_NAME}
 
-                            WHERE consensus_period is not null) consensus
+                            WHERE consensus_period is not null
+                            {% if param_period_type._parameter_value == 'qtr' %}
+                            AND period_type = 'FQ'
+                            {% elsif param_period_type._parameter_value == 'half' %}
+                            AND period_type = 'FH'
+                            {% endif %}) consensus
 
                  on consensus.consensus_period = financial_chart.period
                  and consensus.symbol = financial_chart.symbol
 
                  LEFT JOIN (SELECT distinct symbol, reported_metric_summary
-                            FROM ${ground_truth_financial.SQL_TABLE_NAME}) reported_metric
+                            FROM ${ground_truth_financial.SQL_TABLE_NAME}
+                            WHERE 1=1
+                            {% if param_period_type._parameter_value == 'qtr' %}
+                            AND period_type = 'FQ'
+                            {% elsif param_period_type._parameter_value == 'half' %}
+                            AND period_type = 'FH'
+                            {% endif %}
+                            ) reported_metric
 
                  on reported_metric.symbol = financial_chart.symbol
 
@@ -123,6 +151,16 @@ view: financial_forecast_graph {
                  {% elsif param_cardtype._parameter_value == 'recommended' %}
 
                  AND cardtype = "RECOMMENDED"
+
+                 {% endif %}
+
+                 {% if param_period_type._parameter_value == 'qtr' %}
+
+                 AND period_type = 'FQ'
+
+                 {% elsif param_period_type._parameter_value == 'half' %}
+
+                 AND period_type = 'FH'
 
                  {% endif %}
 
@@ -163,6 +201,12 @@ view: financial_forecast_graph {
       allowed_value: { label: "Average Last 8 Qtr" value: "8" }
       allowed_value: { label: "Average All Visible Qtr" value: "All" }
       default_value: "1"
+    }
+
+    parameter: param_period_type {
+      allowed_value: { label: "Fiscal Quarter" value: "qtr"}
+      allowed_value: { label: "Fiscal Half" value: "half"}
+      default_value: "qtr"
     }
 
     dimension: symbol {

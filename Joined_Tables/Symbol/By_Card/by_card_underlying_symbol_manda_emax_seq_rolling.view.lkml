@@ -231,21 +231,21 @@ view: by_card_underlying_symbol_manda_emax_seq_rolling {
                                       from (SELECT distinct symbol, period, period_start_dt, period_end_dt FROM ${ground_truth_financial.SQL_TABLE_NAME}
                                             WHERE period_type = 'FH')
 
-                                     #union all
+                                     union all
 
-                                     #select
-                                     #    s.symbol
-                                     #    , c.calendar_half as period
-                                     #    , min(c.date) as period_start_dt
-                                     #    , max(c.date) as period_end_dt
-                                     #from (SELECT distinct symbol FROM ${ground_truth_brand.SQL_TABLE_NAME}) s
-                                     #cross join ${calendar.SQL_TABLE_NAME} c
-                                     #    WHERE s.symbol not in
-                                     #        (SELECT distinct symbol FROM ${ground_truth_financial.SQL_TABLE_NAME}
-                                     #         WHERE period_type = 'FH')
-                                     #group by
-                                     #    s.symbol
-                                     #    , c.calendar_half
+                                     select
+                                         s.symbol
+                                         , c.calendar_half as period
+                                         , min(c.date) as period_start_dt
+                                         , max(c.date) as period_end_dt
+                                     from (SELECT distinct symbol FROM ${ground_truth_brand.SQL_TABLE_NAME}) s
+                                     cross join ${calendar.SQL_TABLE_NAME} c
+                                         WHERE s.symbol not in
+                                             (SELECT distinct symbol FROM ${ground_truth_financial.SQL_TABLE_NAME}
+                                              WHERE period_type = 'FH')
+                                     group by
+                                         s.symbol
+                                         , c.calendar_half
                                     )
          ,  max_date_by_period AS (select
                                     max.symbol

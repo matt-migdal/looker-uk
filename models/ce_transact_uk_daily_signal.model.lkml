@@ -31,6 +31,10 @@ explore: forecast_date_sums {}
 
 explore: symbol_financials {}
 
+explore: forecast_financial_chart {}
+
+explore: calendar {}
+
 explore: bu_discover {}
 
 explore: v2_universe_uk_channel_brand_comparison_yyseq_rolling {}

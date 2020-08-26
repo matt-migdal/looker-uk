@@ -19,7 +19,9 @@ view: symbol_financials { #originally titled view: financials
              end as yago_financial_end_dt,
 
              sf1.reported_sales as reported_sales,
+             sf1.reported_sales_currency as reported_sales_currency,
              sf2.reported_sales as yago_reported_sales,
+             sf2.reported_sales_currency as yago_reported_sales_currency,
              max_date,
              latest_reported.reported_q_num as latest_reported_num,
              financial_start_dt as actual_financial_start_dt,
@@ -138,12 +140,14 @@ view: symbol_financials { #originally titled view: financials
 
       ORDER BY row) financial_intervals
 
-      LEFT JOIN (SELECT distinct symbol, period, reported_metric as reported_sales, period_start_dt, period_end_dt FROM ${ground_truth_financial.SQL_TABLE_NAME}) sf1
+      LEFT JOIN (SELECT distinct symbol, period, reported_metric as reported_sales, reported_metric_currency as reported_sales_currency, period_start_dt, period_end_dt
+                 FROM ${ground_truth_financial.SQL_TABLE_NAME}) sf1
 
       on sf1.symbol = financial_intervals.symbol
       and sf1.period = financial_intervals.period
 
-      LEFT JOIN (SELECT distinct symbol, period, reported_metric as reported_sales, period_start_dt, period_end_dt FROM ${ground_truth_financial.SQL_TABLE_NAME}) sf2
+      LEFT JOIN (SELECT distinct symbol, period, reported_metric as reported_sales, reported_metric_currency as reported_sales_currency, period_start_dt, period_end_dt
+                 FROM ${ground_truth_financial.SQL_TABLE_NAME}) sf2
 
       on sf2.symbol = financial_intervals.symbol
       and sf2.period = financial_intervals.yago_period
@@ -160,7 +164,7 @@ view: symbol_financials { #originally titled view: financials
             (SELECT row_number() over(PARTITION BY symbol, period_type ORDER BY period DESC) as row, *
              FROM
 
-                  (SELECT distinct symbol, period_type, period, reported_metric as reported_sales
+                  (SELECT distinct symbol, period_type, period, reported_metric as reported_sales, reported_metric_currency as reported_sales_currency
                    FROM ${ground_truth_financial.SQL_TABLE_NAME}
                    WHERE reported_metric is not null
                    ORDER BY symbol, period_type, period DESC)))) latest_reported
@@ -191,7 +195,9 @@ view: symbol_financials { #originally titled view: financials
              end as yago_financial_end_dt,
 
              sf1.reported_sales as reported_sales,
+             sf1.reported_sales_currency as reported_sales_currency,
              sf2.reported_sales as yago_reported_sales,
+             sf2.reported_sales_currency as yago_reported_sales_currency,
              max_date,
              latest_reported.reported_q_num as latest_reported_num,
              financial_start_dt as actual_financial_start_dt,
@@ -310,12 +316,14 @@ view: symbol_financials { #originally titled view: financials
 
       ORDER BY row) financial_intervals
 
-      LEFT JOIN (SELECT distinct symbol, period, reported_metric as reported_sales, period_start_dt, period_end_dt FROM ${ground_truth_financial.SQL_TABLE_NAME}) sf1
+      LEFT JOIN (SELECT distinct symbol, period, reported_metric as reported_sales, reported_metric_currency as reported_sales_currency, period_start_dt, period_end_dt
+                 FROM ${ground_truth_financial.SQL_TABLE_NAME}) sf1
 
       on sf1.symbol = financial_intervals.symbol
       and sf1.period = financial_intervals.period
 
-      LEFT JOIN (SELECT distinct symbol, period, reported_metric as reported_sales, period_start_dt, period_end_dt FROM ${ground_truth_financial.SQL_TABLE_NAME}) sf2
+      LEFT JOIN (SELECT distinct symbol, period, reported_metric as reported_sales, reported_metric_currency as reported_sales_currency, period_start_dt, period_end_dt
+                 FROM ${ground_truth_financial.SQL_TABLE_NAME}) sf2
 
       on sf2.symbol = financial_intervals.symbol
       and sf2.period = financial_intervals.yago_period

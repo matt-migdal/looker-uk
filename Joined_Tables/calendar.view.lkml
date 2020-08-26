@@ -12,9 +12,11 @@ view: calendar {
 
     c.bank_holiday_flag, c.major_holiday_flag,
 
-    c.calendar_qtr_jan, c.calendar_qtr_feb, c.calendar_month_name, c.calendar_qtr_name, c.calendar_qtr_jan_name, c.calendar_qtr_feb_name
+    c.calendar_qtr_jan, c.calendar_qtr_feb, c.calendar_month_name, c.calendar_qtr_name, c.calendar_qtr_jan_name, c.calendar_qtr_feb_name,
 
-    FROM `ce-cloud-services.apollo_reference.calendar` c
+    c.calendar_half, c.uk_bank_holiday_flag, c.uk_major_holiday_flag
+
+    FROM `ce-cloud-services.ce_transact_uk.calendar` c
 
     LEFT JOIN (SELECT max(date) as week_end, calendar_week FROM `ce-cloud-services.apollo_reference.calendar` GROUP BY calendar_week) we
 
@@ -25,4 +27,9 @@ view: calendar {
 
       datagroup_trigger: ce_transact_uk_daily_signal_default_datagroup
 
-    }}
+    }
+
+    dimension: calendar_half {
+      sql: ${TABLE}.calendar_half ;;
+    }
+    }

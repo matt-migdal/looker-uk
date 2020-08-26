@@ -1,6 +1,70 @@
 view: symbol_comparison {
   derived_table: {
-    sql: SELECT * FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
+    sql: SELECT symbol,
+              brand_name,
+              brand_id,
+              cardtype,
+              partial_period_flag,
+              period_type,
+              merger_type,
+              panel_type,
+              panel_method,
+              cardtype_include,
+              period,
+              period_start_dt,
+              ptd_end_dt,
+              {% if currency._parameter_value == 'gbp' %}
+              gbp_spend_amount as spend_amount,
+              prev_gbp_spend_amount as prev_spend_amount,
+              gbp_spend_amount/prev_gbp_spend_amount - 1 as ptd_spend_yoy,
+              {% elsif currency._parameter_value == 'cad' %}
+              cad_spend_amount as spend_amount,
+              prev_cad_spend_amount as prev_spend_amount,
+              cad_spend_amount/prev_cad_spend_amount - 1 as ptd_spend_yoy,
+              {% elsif currency._parameter_value == 'usd' %}
+              usd_spend_amount as spend_amount,
+              prev_usd_spend_amount as prev_spend_amount,
+              usd_spend_amount/prev_usd_spend_amount - 1 as ptd_spend_yoy,
+              {% elsif currency._parameter_value == 'eur' %}
+              eur_spend_amount as spend_amount,
+              prev_eur_spend_amount as prev_spend_amount,
+              eur_spend_amount/prev_eur_spend_amount - 1 as ptd_spend_yoy,
+              {% elsif currency._parameter_value == 'dkk' %}
+              dkk_spend_amount as spend_amount,
+              prev_dkk_spend_amount as prev_spend_amount,
+              dkk_spend_amount/prev_dkk_spend_amount - 1 as ptd_spend_yoy,
+              {% elsif currency._parameter_value == 'nok' %}
+              nok_spend_amount as spend_amount,
+              prev_nok_spend_amount as prev_spend_amount,
+              nok_spend_amount/prev_nok_spend_amount - 1 as ptd_spend_yoy,
+              {% elsif currency._parameter_value == 'jpy' %}
+              jpy_spend_amount as spend_amount,
+              prev_jpy_spend_amount as prev_spend_amount,
+              jpy_spend_amount/prev_jpy_spend_amount - 1 as ptd_spend_yoy,
+              {% elsif currency._parameter_value == 'sek' %}
+              sek_spend_amount as spend_amount,
+              prev_sek_spend_amount as prev_spend_amount,
+              sek_spend_amount/prev_sek_spend_amount - 1 as ptd_spend_yoy,
+              {% elsif currency._parameter_value == 'pln' %}
+              pln_spend_amount as spend_amount,
+              prev_pln_spend_amount as prev_spend_amount,
+              pln_spend_amount/prev_pln_spend_amount - 1 as ptd_spend_yoy,
+              {% endif %}
+              prev_period,
+              prev_period_start_dt,
+              prev_ptd_end_dt,
+              #ptd_spend_yoy,
+              trans_count,
+              prev_trans_count,
+              ptd_trans_yoy,
+              latest_period_flag,
+              period_day,
+              period_end_dt,
+
+              company_name,
+
+              recommended_card_type
+              FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
           WHERE 1=1
 
@@ -99,11 +163,28 @@ view: symbol_comparison {
       label: "Period Type"
       type: unquoted
       allowed_value: { label: "Fiscal Quarter" value: "QTR" }
+      allowed_value: { label: "Fiscal Half" value: "HALF"}
+      allowed_value: { label: "Calendar Half" value: "CAL_HALF"}
       allowed_value: { label: "Calendar Quarter" value: "CAL_QTR" }
       allowed_value: { label: "Monthly" value: "MONTH" }
       allowed_value: { label: "Weekly" value: "WEEK" }
       default_value: "CAL_QTR"
     }
+
+  parameter: currency {
+    label: "Currency Type"
+    type: unquoted
+    allowed_value: { label: "Great British Pounds (GBP)" value: "gbp"}
+    allowed_value: { label: "United States Dollars (USD)" value: "usd"}
+    allowed_value: { label: "Euros (EUR)" value: "eur"}
+    allowed_value: { label: "Canadian Dollars (CAD)" value: "cad"}
+    allowed_value: { label: "Danish Krone (DKK)" value: "dkk"}
+    allowed_value: { label: "Norwegian Krone (NOK)" value: "nok"}
+    allowed_value: { label: "Japanese Yen (JPY)" value: "jpy"}
+    allowed_value: { label: "Swedish Krona (SEK)" value: "sek"}
+    allowed_value: { label: "Polish Zloty (PLN)" value: "pln"}
+    default_value: "gbp"
+  }
 
     dimension: symbol {
       type: string
@@ -207,12 +288,12 @@ view: symbol_comparison {
 
     dimension: ya_period {
       type: string
-      sql: ${TABLE}.ya_period ;;
+      sql: ${TABLE}.prev_period ;;
     }
 
     dimension_group: ya_period_start_dt {
       type: time
-      sql: ${TABLE}.ya_period_start_dt ;;
+      sql: ${TABLE}.prev_period_start_dt ;;
       timeframes: [date]
       convert_tz: no
       datatype: date
@@ -220,7 +301,7 @@ view: symbol_comparison {
 
     dimension_group: ya_ptd_end_dt {
       type: time
-      sql: ${TABLE}.ya_ptd_end_dt ;;
+      sql: ${TABLE}.prev_ptd_end_dt ;;
       timeframes: [date]
       convert_tz: no
       datatype: date
@@ -228,7 +309,7 @@ view: symbol_comparison {
 
     measure: ya_spend_amount {
       type: sum
-      sql: ${TABLE}.ya_spend_amount ;;
+      sql: ${TABLE}.prev_spend_amount ;;
       value_format_name: usd_0
     }
 
@@ -246,7 +327,7 @@ view: symbol_comparison {
 
     measure: ya_trans_count {
       type: sum
-      sql: ${TABLE}.ya_trans_count ;;
+      sql: ${TABLE}.prev_trans_count ;;
       value_format_name: decimal_0
     }
 

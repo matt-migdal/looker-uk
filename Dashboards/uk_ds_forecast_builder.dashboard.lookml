@@ -62,7 +62,7 @@
       qtd_chart.day_count]
     listen:
       Symbol: qtd_chart.symbol
-      Fiscal Quarter: qtd_chart.param_quarters
+      Fiscal Quarter: qtd_chart.param_periods
       Panel Method: qtd_chart.param_panel_type
       Cardtype: qtd_chart.param_cardtype
       M&A Activity: qtd_chart.param_merger_type
@@ -134,7 +134,7 @@
       qtd_chart.day_count]
     listen:
       Symbol: qtd_chart.symbol
-      Fiscal Quarter: qtd_chart.param_quarters
+      Fiscal Quarter: qtd_chart.param_periods
       Panel Method: qtd_chart.param_panel_type
       Cardtype: qtd_chart.param_cardtype
       M&A Activity: qtd_chart.param_merger_type
@@ -433,7 +433,7 @@
     hidden_fields: [qtd_captured_sales.row]
     listen:
       Symbol: qtd_captured_sales.symbol_liquid
-      Fiscal Quarter: qtd_captured_sales.param_quarters
+      Fiscal Quarter: qtd_captured_sales.param_periods
       Panel Method: qtd_captured_sales.param_panel_type
       Cardtype: qtd_captured_sales.param_cardtype
       M&A Activity: qtd_captured_sales.param_merger_type
@@ -550,7 +550,7 @@
     model: ce_transact_uk_daily_signal
     explore: qtd_chart
     listens_to_filters: []
-    field: qtd_chart.param_quarters
+    field: qtd_chart.param_periods
   - name: Panel Method
     title: Panel Method
     type: field_filter
