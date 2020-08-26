@@ -1,4 +1,4 @@
-view: v2_universe_uk_channel_brand_comparison_yyseq_rolling {
+view: bu_brand_comparison {
   derived_table: {
     sql: SELECT
 
@@ -94,11 +94,11 @@ view: v2_universe_uk_channel_brand_comparison_yyseq_rolling {
 
                                   {% if param_growth._parameter_value == 'yy_g' %}
 
-                                  ${v2_universe_by_card_channel_underlying_brand_fix_yy_rolling.SQL_TABLE_NAME}
+                                  ${universe_by_card_channel_underlying_brand_fix_yy_rolling.SQL_TABLE_NAME}
 
                                   {% elsif param_growth._parameter_value == 'seq_g' %}
 
-                                  ${v2_universe_by_card_channel_underlying_brand_fix_seq_rolling.SQL_TABLE_NAME}
+                                  ${universe_by_card_channel_underlying_brand_fix_seq_rolling.SQL_TABLE_NAME}
 
                                   {% endif %}
 
@@ -117,6 +117,10 @@ view: v2_universe_uk_channel_brand_comparison_yyseq_rolling {
                                           {% if param_period_type._parameter_value == 'CAL_QTR' %}
 
                                           AND period_type = "CAL_QTR"
+
+                                          {% elsif param_period_type._parameter_value == 'CAL_HALF' %}
+
+                                          AND period_type = "CAL_HALF"
 
                                           {% elsif param_period_type._parameter_value == 'MONTH' %}
 
@@ -195,6 +199,7 @@ view: v2_universe_uk_channel_brand_comparison_yyseq_rolling {
       allowed_value: { label: "Calendar Week" value: "WEEK" }
       allowed_value: { label: "Calendar Month" value: "MONTH" }
       allowed_value: { label: "Calendar Quarter" value: "CAL_QTR" }
+      allowed_value: { label: "Calendar Half" value: "CAL_HALF"}
       allowed_value: { label: "Discrete 7 Days" value: "7D_Bucket"}
       allowed_value: { label: "Discrete 35 Days" value: "35D_Bucket"}
       allowed_value: { label: "Discrete 91 Days" value: "91D_Bucket"}

@@ -1,5 +1,5 @@
-view: v2_universe_by_card_channel_underlying_brand_fix_yy_rolling {
-  #tested in explore on 2/19/20; runs successfully
+view: universe_by_card_channel_underlying_brand_fix_yy_rolling {
+
   derived_table: {
     sql:
 
@@ -161,7 +161,7 @@ view: v2_universe_by_card_channel_underlying_brand_fix_yy_rolling {
               , latest_period_flag
               , period_day
               , period_end_dt
-        FROM ${v2_universe_by_card_channel_brand_reg_constind_rolling.SQL_TABLE_NAME} WHERE merger_type = "NONE"
+        FROM ${universe_by_card_channel_brand_reg_constind_rolling.SQL_TABLE_NAME} WHERE merger_type = "NONE"
 
         UNION ALL
 
@@ -239,7 +239,7 @@ view: v2_universe_by_card_channel_underlying_brand_fix_yy_rolling {
               , latest_period_flag
               , period_day
               , period_end_dt
-        FROM ${v2_universe_by_card_channel_brand_reg_emax_rolling.SQL_TABLE_NAME} WHERE merger_type = "NONE") und
+        FROM ${universe_by_card_channel_brand_reg_emax_rolling.SQL_TABLE_NAME} WHERE merger_type = "NONE") und
 
 
               ;;

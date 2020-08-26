@@ -1,4 +1,4 @@
-view: v2_universe_by_card_channel_brand_reg_emax_seq_rolling {
+view: universe_by_card_channel_brand_reg_emax_seq_rolling {
   derived_table: {
     partition_keys: ["period_start_dt"]
     cluster_keys: ["merger_type"]
