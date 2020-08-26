@@ -33,5 +33,6 @@ explore: symbol_financials {}
 
 explore: forecast_financial_chart {}
 
-
 explore: calendar {}
+
+explore: bu_discover {}

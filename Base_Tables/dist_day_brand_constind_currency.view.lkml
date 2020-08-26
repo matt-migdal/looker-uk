@@ -15,8 +15,7 @@ view: dist_day_brand_constind_currency {
            base.spend_amount*nok.exchange_rate as nok_spend_amount,
            base.spend_amount*jpy.exchange_rate as jpy_spend_amount,
            base.spend_amount*sek.exchange_rate as sek_spend_amount,
-           base.spend_amount*pln.exchange_rate as pln_spend_amount,
-           base.est_rec_pct
+           base.spend_amount*pln.exchange_rate as pln_spend_amount
     FROM `ce-cloud-services.ce_transact_uk_daily_signal.dist_day_brand_constind` base
     LEFT JOIN (select * from `ce-cloud-services.currency_exchange_rate.exchange_rate`
                WHERE base_currency = 'GBP' AND currency_code = 'CAD') cad
