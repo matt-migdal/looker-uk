@@ -1,10 +1,11 @@
 view: forecast_date_sums {
   derived_table: {
     partition_keys: ["current_period_start_dt"]
-    cluster_keys: ["panel_type", "cardtype", "merger_type", "quarters"]
+    cluster_keys: ["panel_type", "cardtype", "merger_type", "periods"]
     sql:
 
     SELECT current_spend.symbol,
+           current_spend.period_type,
                   current_spend.period,
                   current_spend.merger_type,
                   current_spend.panel_type,
@@ -23,8 +24,8 @@ view: forecast_date_sums {
 
                   current_spend.day_count,
                   current_spend.reverse_day_count,
-                  current_spend.quarters,
-                  current_spend.quarter_length,
+                  current_spend.periods,
+                  current_spend.period_length,
                   current_spend.balance_length,
                   current_spend.current_period_start_dt,
                   current_spend.current_cum_end_dt,
@@ -92,9 +93,9 @@ view: forecast_date_sums {
                   balance_two_yago_sek_spend_amount,
                   balance_two_yago_pln_spend_amount,
 
-                  current_gbp_spend_amount / nullif(yago_gbp_spend_amount, 0) as current_yoy,
-                  yago_gbp_spend_amount / nullif(two_yago_gbp_spend_amount, 0) as yago_yoy,
-                  balance_yago_gbp_spend_amount / nullif(balance_two_yago_gbp_spend_amount, 0) as balance_yoy
+                  current_gbp_spend_amount / nullif(yago_gbp_spend_amount, 0) as current_yoy_gbp,
+                  yago_gbp_spend_amount / nullif(two_yago_gbp_spend_amount, 0) as yago_yoy_gbp,
+                  balance_yago_gbp_spend_amount / nullif(balance_two_yago_gbp_spend_amount, 0) as balance_yoy_gbp
 
             FROM
 
@@ -148,7 +149,7 @@ view: forecast_date_sums {
                  on spend.symbol = all_date_ranges.symbol
                  and trans_date between current_period_start_dt and current_cum_end_dt
 
-                 GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+                 GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
                  ORDER BY symbol, day_count) current_spend
 
             LEFT JOIN (SELECT all_date_ranges.*,
@@ -200,13 +201,13 @@ view: forecast_date_sums {
                         on spend.symbol = all_date_ranges.symbol
                         and trans_date between yago_period_start_dt and yago_cum_end_dt
 
-                        GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+                        GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
                         ORDER BY symbol, day_count) yago_spend
 
             on current_spend.symbol = yago_spend.symbol
             and current_spend.cardtype = yago_spend.cardtype
             and current_spend.day_count = yago_spend.day_count
-            and current_spend.quarters = yago_spend.quarters
+            and current_spend.periods = yago_spend.periods
 
             LEFT JOIN (SELECT all_date_ranges.*,
                               spend.cardtype,
@@ -258,11 +259,12 @@ view: forecast_date_sums {
                         and trans_date between two_yago_period_start_dt and two_yago_cum_end_dt
 
                         GROUP BY symbol,
+                                 period_type,
                                  period,
                                  day_count,
                                  reverse_day_count,
-                                 quarters,
-                                 quarter_length,
+                                 periods,
+                                 period_length,
                                  balance_length,
                                  current_period_start_dt,
                                  current_cum_end_dt,
@@ -289,7 +291,7 @@ view: forecast_date_sums {
             on current_spend.symbol = two_yago_spend.symbol
             and current_spend.cardtype = two_yago_spend.cardtype
             and current_spend.day_count = two_yago_spend.day_count
-            and current_spend.quarters = two_yago_spend.quarters
+            and current_spend.periods = two_yago_spend.periods
 
             LEFT JOIN (SELECT all_date_ranges.*,
                               spend.cardtype,
@@ -340,13 +342,13 @@ view: forecast_date_sums {
                         on spend.symbol = all_date_ranges.symbol
                         and trans_date between balance_yago_cum_start_dt and  balance_yago_period_end_dt
 
-                        GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+                        GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
                         ORDER BY symbol, day_count) balance_yago_spend
 
             on current_spend.symbol = balance_yago_spend.symbol
             and current_spend.cardtype = balance_yago_spend.cardtype
             and current_spend.day_count = balance_yago_spend.day_count
-            and current_spend.quarters = balance_yago_spend.quarters
+            and current_spend.periods = balance_yago_spend.periods
 
             LEFT JOIN (SELECT all_date_ranges.*,
                               spend.cardtype,
@@ -397,19 +399,20 @@ view: forecast_date_sums {
                       on spend.symbol = all_date_ranges.symbol
                       and trans_date between balance_two_yago_cum_start_dt and  balance_two_yago_period_end_dt
 
-                      GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+                      GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
                       ORDER BY symbol, day_count) balance_two_yago_spend
 
             on current_spend.symbol = balance_two_yago_spend.symbol
             and current_spend.cardtype = balance_two_yago_spend.cardtype
             and current_spend.day_count = balance_two_yago_spend.day_count
-            and current_spend.quarters = balance_two_yago_spend.quarters
+            and current_spend.periods = balance_two_yago_spend.periods
 
     ####################################################
     UNION ALL
     ####################################################
 
     SELECT current_spend.symbol,
+           current_spend.period_type,
            current_spend.period,
            current_spend.merger_type,
            current_spend.panel_type,
@@ -428,8 +431,8 @@ view: forecast_date_sums {
 
            current_spend.day_count,
            current_spend.reverse_day_count,
-           current_spend.quarters,
-           current_spend.quarter_length,
+           current_spend.periods,
+           current_spend.period_length,
            current_spend.balance_length,
            current_spend.current_period_start_dt,
            current_spend.current_cum_end_dt,
@@ -497,9 +500,9 @@ view: forecast_date_sums {
            balance_two_yago_sek_spend_amount,
            balance_two_yago_pln_spend_amount,
 
-           current_gbp_spend_amount / nullif(yago_gbp_spend_amount, 0) as current_yoy,
-           yago_gbp_spend_amount / nullif(two_yago_gbp_spend_amount, 0) as yago_yoy,
-           balance_yago_gbp_spend_amount / nullif(balance_two_yago_gbp_spend_amount, 0) as balance_yoy
+           current_gbp_spend_amount / nullif(yago_gbp_spend_amount, 0) as current_yoy_gbp,
+           yago_gbp_spend_amount / nullif(two_yago_gbp_spend_amount, 0) as yago_yoy_gbp,
+           balance_yago_gbp_spend_amount / nullif(balance_two_yago_gbp_spend_amount, 0) as balance_yoy_gbp
 
     FROM
 
@@ -553,7 +556,7 @@ view: forecast_date_sums {
         on spend.symbol = all_date_ranges.symbol
         and trans_date between current_period_start_dt and current_cum_end_dt
 
-        GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+        GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
         ORDER BY symbol, day_count) current_spend
 
     LEFT JOIN (SELECT all_date_ranges.*,
@@ -605,13 +608,13 @@ view: forecast_date_sums {
                  on spend.symbol = all_date_ranges.symbol
                  and trans_date between yago_period_start_dt and yago_cum_end_dt
 
-                 GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+                 GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
                  ORDER BY symbol, day_count) yago_spend
 
     on current_spend.symbol = yago_spend.symbol
     and current_spend.cardtype = yago_spend.cardtype
     and current_spend.day_count = yago_spend.day_count
-    and current_spend.quarters = yago_spend.quarters
+    and current_spend.periods = yago_spend.periods
 
     LEFT JOIN (SELECT all_date_ranges.*,
                       spend.cardtype,
@@ -662,13 +665,13 @@ view: forecast_date_sums {
               on spend.symbol = all_date_ranges.symbol
               and trans_date between two_yago_period_start_dt and two_yago_cum_end_dt
 
-              GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+              GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
               ORDER BY symbol, day_count) two_yago_spend
 
     on current_spend.symbol = two_yago_spend.symbol
     and current_spend.cardtype = two_yago_spend.cardtype
     and current_spend.day_count = two_yago_spend.day_count
-    and current_spend.quarters = two_yago_spend.quarters
+    and current_spend.periods = two_yago_spend.periods
 
     LEFT JOIN (SELECT all_date_ranges.*,
                       spend.cardtype,
@@ -719,13 +722,13 @@ view: forecast_date_sums {
               on spend.symbol = all_date_ranges.symbol
               and trans_date between balance_yago_cum_start_dt and  balance_yago_period_end_dt
 
-              GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+              GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
               ORDER BY symbol, day_count) balance_yago_spend
 
     on current_spend.symbol = balance_yago_spend.symbol
     and current_spend.cardtype = balance_yago_spend.cardtype
     and current_spend.day_count = balance_yago_spend.day_count
-    and current_spend.quarters = balance_yago_spend.quarters
+    and current_spend.periods = balance_yago_spend.periods
 
     LEFT JOIN (SELECT all_date_ranges.*,
                       spend.cardtype,
@@ -776,19 +779,20 @@ view: forecast_date_sums {
               on spend.symbol = all_date_ranges.symbol
               and trans_date between balance_two_yago_cum_start_dt and  balance_two_yago_period_end_dt
 
-              GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+              GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
               ORDER BY symbol, day_count) balance_two_yago_spend
 
     on current_spend.symbol = balance_two_yago_spend.symbol
     and current_spend.cardtype = balance_two_yago_spend.cardtype
     and current_spend.day_count = balance_two_yago_spend.day_count
-    and current_spend.quarters = balance_two_yago_spend.quarters
+    and current_spend.periods = balance_two_yago_spend.periods
 
     ####################################################
     UNION ALL
     ####################################################
 
     SELECT current_spend.symbol,
+           current_spend.period_type,
            current_spend.period,
            current_spend.merger_type,
            current_spend.panel_type,
@@ -807,8 +811,8 @@ view: forecast_date_sums {
 
            current_spend.day_count,
            current_spend.reverse_day_count,
-           current_spend.quarters,
-           current_spend.quarter_length,
+           current_spend.periods,
+           current_spend.period_length,
            current_spend.balance_length,
            current_spend.current_period_start_dt,
            current_spend.current_cum_end_dt,
@@ -876,9 +880,9 @@ view: forecast_date_sums {
            balance_two_yago_sek_spend_amount,
            balance_two_yago_pln_spend_amount,
 
-           current_gbp_spend_amount / nullif(yago_gbp_spend_amount, 0) as current_yoy,
-           yago_gbp_spend_amount / nullif(two_yago_gbp_spend_amount, 0) as yago_yoy,
-           balance_yago_gbp_spend_amount / nullif(balance_two_yago_gbp_spend_amount, 0) as balance_yoy
+           current_gbp_spend_amount / nullif(yago_gbp_spend_amount, 0) as current_yoy_gbp,
+           yago_gbp_spend_amount / nullif(two_yago_gbp_spend_amount, 0) as yago_yoy_gbp,
+           balance_yago_gbp_spend_amount / nullif(balance_two_yago_gbp_spend_amount, 0) as balance_yoy_gbp
 
     FROM
 
@@ -937,7 +941,7 @@ view: forecast_date_sums {
         on spend.symbol = all_date_ranges.symbol
         and trans_date between current_period_start_dt and current_cum_end_dt
 
-        GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+        GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
         ORDER BY symbol, day_count) current_spend
 
     LEFT JOIN (SELECT all_date_ranges.*,
@@ -988,13 +992,13 @@ view: forecast_date_sums {
                  on spend.symbol = all_date_ranges.symbol
                  and trans_date between yago_period_start_dt and yago_cum_end_dt
 
-                 GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+                 GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
                  ORDER BY symbol, day_count) yago_spend
 
     on current_spend.symbol = yago_spend.symbol
     and current_spend.cardtype = yago_spend.cardtype
     and current_spend.day_count = yago_spend.day_count
-    and current_spend.quarters = yago_spend.quarters
+    and current_spend.periods = yago_spend.periods
 
     LEFT JOIN (SELECT all_date_ranges.*,
                       spend.cardtype,
@@ -1044,13 +1048,13 @@ view: forecast_date_sums {
               on spend.symbol = all_date_ranges.symbol
               and trans_date between two_yago_period_start_dt and two_yago_cum_end_dt
 
-              GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+              GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
               ORDER BY symbol, day_count) two_yago_spend
 
     on current_spend.symbol = two_yago_spend.symbol
     and current_spend.cardtype = two_yago_spend.cardtype
     and current_spend.day_count = two_yago_spend.day_count
-    and current_spend.quarters = two_yago_spend.quarters
+    and current_spend.periods = two_yago_spend.periods
 
     LEFT JOIN (SELECT all_date_ranges.*,
                       spend.cardtype,
@@ -1100,13 +1104,13 @@ view: forecast_date_sums {
               on spend.symbol = all_date_ranges.symbol
               and trans_date between balance_yago_cum_start_dt and  balance_yago_period_end_dt
 
-              GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+              GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
               ORDER BY symbol, day_count) balance_yago_spend
 
     on current_spend.symbol = balance_yago_spend.symbol
     and current_spend.cardtype = balance_yago_spend.cardtype
     and current_spend.day_count = balance_yago_spend.day_count
-    and current_spend.quarters = balance_yago_spend.quarters
+    and current_spend.periods = balance_yago_spend.periods
 
     LEFT JOIN (SELECT all_date_ranges.*,
                       spend.cardtype,
@@ -1156,19 +1160,20 @@ view: forecast_date_sums {
               on spend.symbol = all_date_ranges.symbol
               and trans_date between balance_two_yago_cum_start_dt and  balance_two_yago_period_end_dt
 
-              GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+              GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
               ORDER BY symbol, day_count) balance_two_yago_spend
 
     on current_spend.symbol = balance_two_yago_spend.symbol
     and current_spend.cardtype = balance_two_yago_spend.cardtype
     and current_spend.day_count = balance_two_yago_spend.day_count
-    and current_spend.quarters = balance_two_yago_spend.quarters
+    and current_spend.periods = balance_two_yago_spend.periods
 
     ####################################################
     UNION ALL
     ####################################################
 
     SELECT current_spend.symbol,
+           current_spend.period_type,
            current_spend.period,
            current_spend.merger_type,
            current_spend.panel_type,
@@ -1187,8 +1192,8 @@ view: forecast_date_sums {
 
            current_spend.day_count,
            current_spend.reverse_day_count,
-           current_spend.quarters,
-           current_spend.quarter_length,
+           current_spend.periods,
+           current_spend.period_length,
            current_spend.balance_length,
            current_spend.current_period_start_dt,
            current_spend.current_cum_end_dt,
@@ -1256,9 +1261,9 @@ view: forecast_date_sums {
            balance_two_yago_sek_spend_amount,
            balance_two_yago_pln_spend_amount,
 
-           current_gbp_spend_amount / nullif(yago_gbp_spend_amount, 0) as current_yoy,
-           yago_gbp_spend_amount / nullif(two_yago_gbp_spend_amount, 0) as yago_yoy,
-           balance_yago_gbp_spend_amount / nullif(balance_two_yago_gbp_spend_amount, 0) as balance_yoy
+           current_gbp_spend_amount / nullif(yago_gbp_spend_amount, 0) as current_yoy_gbp,
+           yago_gbp_spend_amount / nullif(two_yago_gbp_spend_amount, 0) as yago_yoy_gbp,
+           balance_yago_gbp_spend_amount / nullif(balance_two_yago_gbp_spend_amount, 0) as balance_yoy_gbp
 
     FROM
 
@@ -1311,7 +1316,7 @@ view: forecast_date_sums {
            on spend.symbol = all_date_ranges.symbol
            and trans_date between current_period_start_dt and current_cum_end_dt
 
-           GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+           GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
            ORDER BY symbol, day_count) current_spend
 
     LEFT JOIN (SELECT all_date_ranges.*,
@@ -1362,13 +1367,13 @@ view: forecast_date_sums {
                  on spend.symbol = all_date_ranges.symbol
                  and trans_date between yago_period_start_dt and yago_cum_end_dt
 
-                 GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+                 GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
                  ORDER BY symbol, day_count) yago_spend
 
     on current_spend.symbol = yago_spend.symbol
     and current_spend.cardtype = yago_spend.cardtype
     and current_spend.day_count = yago_spend.day_count
-    and current_spend.quarters = yago_spend.quarters
+    and current_spend.periods = yago_spend.periods
 
     LEFT JOIN (SELECT all_date_ranges.*,
                       spend.cardtype,
@@ -1418,13 +1423,13 @@ view: forecast_date_sums {
               on spend.symbol = all_date_ranges.symbol
               and trans_date between two_yago_period_start_dt and two_yago_cum_end_dt
 
-              GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+              GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
               ORDER BY symbol, day_count) two_yago_spend
 
     on current_spend.symbol = two_yago_spend.symbol
     and current_spend.cardtype = two_yago_spend.cardtype
     and current_spend.day_count = two_yago_spend.day_count
-    and current_spend.quarters = two_yago_spend.quarters
+    and current_spend.periods = two_yago_spend.periods
 
     LEFT JOIN (SELECT all_date_ranges.*,
                       spend.cardtype,
@@ -1473,13 +1478,13 @@ view: forecast_date_sums {
               on spend.symbol = all_date_ranges.symbol
               and trans_date between balance_yago_cum_start_dt and  balance_yago_period_end_dt
 
-              GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+              GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
               ORDER BY symbol, day_count) balance_yago_spend
 
     on current_spend.symbol = balance_yago_spend.symbol
     and current_spend.cardtype = balance_yago_spend.cardtype
     and current_spend.day_count = balance_yago_spend.day_count
-    and current_spend.quarters = balance_yago_spend.quarters
+    and current_spend.periods = balance_yago_spend.periods
 
     LEFT JOIN (SELECT all_date_ranges.*, spend.cardtype,
                       #sum(spend_amount) as balance_two_yago_spend_amount,
@@ -1528,13 +1533,13 @@ view: forecast_date_sums {
               on spend.symbol = all_date_ranges.symbol
               and trans_date between balance_two_yago_cum_start_dt and  balance_two_yago_period_end_dt
 
-              GROUP BY symbol, period, day_count, reverse_day_count, quarters, quarter_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
+              GROUP BY symbol, period_type, period, day_count, reverse_day_count, periods, period_length, balance_length, current_period_start_dt, current_cum_end_dt, current_sum_include, yago_period_start_dt, yago_cum_end_dt, yago_sum_include, two_yago_period_start_dt, two_yago_cum_end_dt, two_yago_sum_include, balance_yago_cum_start_dt, balance_yago_period_end_dt, balance_yago_sum_include, balance_two_yago_cum_start_dt, balance_two_yago_period_end_dt, balance_two_yago_sum_include, merger_type, panel_type, spend.cardtype, spend.panel_method, spend.cardtype_include
               ORDER BY symbol, day_count) balance_two_yago_spend
 
     on current_spend.symbol = balance_two_yago_spend.symbol
     and current_spend.cardtype = balance_two_yago_spend.cardtype
     and current_spend.day_count = balance_two_yago_spend.day_count
-    and current_spend.quarters = balance_two_yago_spend.quarters
+    and current_spend.periods = balance_two_yago_spend.periods
 
 
      ;;

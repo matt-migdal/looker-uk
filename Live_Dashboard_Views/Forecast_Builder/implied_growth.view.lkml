@@ -82,29 +82,29 @@ view: implied_growth {
 
                                     {% endif %}
 
-                                          {% if param_quarters._parameter_value == 'current_quarter' %}
+                                          {% if param_quarters._parameter_value == 'current_period' %}
 
-                                          AND quarter_number = 1
+                                          AND period_number = 1
 
-                                          {% elsif param_quarters._parameter_value == 'prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == 'prev_period' %}
 
-                                          AND quarter_number = 2
+                                          AND period_number = 2
 
-                                          {% elsif param_quarters._parameter_value == '2_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '2_prev_period' %}
 
-                                          AND quarter_number = 3
+                                          AND period_number = 3
 
-                                          {% elsif param_quarters._parameter_value == '3_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '3_prev_period' %}
 
-                                          AND quarter_number = 4
+                                          AND period_number = 4
 
-                                          {% elsif param_quarters._parameter_value == '4_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '4_prev_period' %}
 
-                                          AND quarter_number = 5
+                                          AND period_number = 5
 
-                                          {% elsif param_quarters._parameter_value == '5_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '5_prev_period' %}
 
-                                          AND quarter_number = 6
+                                          AND period_number = 6
 
                                           {% endif %}
 
@@ -189,29 +189,29 @@ view: implied_growth {
 
                                     {% endif %}
 
-                                          {% if param_quarters._parameter_value == 'current_quarter' %}
+                                          {% if param_quarters._parameter_value == 'current_period' %}
 
-                                          AND quarter_number = 1
+                                          AND period_number = 1
 
-                                          {% elsif param_quarters._parameter_value == 'prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == 'prev_period' %}
 
-                                          AND quarter_number = 2
+                                          AND period_number = 2
 
-                                          {% elsif param_quarters._parameter_value == '2_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '2_prev_period' %}
 
-                                          AND quarter_number = 3
+                                          AND period_number = 3
 
-                                          {% elsif param_quarters._parameter_value == '3_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '3_prev_period' %}
 
-                                          AND quarter_number = 4
+                                          AND period_number = 4
 
-                                          {% elsif param_quarters._parameter_value == '4_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '4_prev_period' %}
 
-                                          AND quarter_number = 5
+                                          AND period_number = 5
 
-                                          {% elsif param_quarters._parameter_value == '5_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '5_prev_period' %}
 
-                                          AND quarter_number = 6
+                                          AND period_number = 6
 
                                           {% endif %}
 
@@ -255,29 +255,29 @@ view: implied_growth {
 
                                     {% endif %}
 
-                                          {% if param_quarters._parameter_value == 'current_quarter' %}
+                                          {% if param_quarters._parameter_value == 'current_period' %}
 
-                                          AND quarter_number = 2
+                                          AND period_number = 2
 
-                                          {% elsif param_quarters._parameter_value == 'prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == 'prev_period' %}
 
-                                          AND quarter_number = 3
+                                          AND period_number = 3
 
-                                          {% elsif param_quarters._parameter_value == '2_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '2_prev_period' %}
 
-                                          AND quarter_number = 4
+                                          AND period_number = 4
 
-                                          {% elsif param_quarters._parameter_value == '3_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '3_prev_period' %}
 
-                                          AND quarter_number = 5
+                                          AND period_number = 5
 
-                                          {% elsif param_quarters._parameter_value == '4_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '4_prev_period' %}
 
-                                          AND quarter_number = 6
+                                          AND period_number = 6
 
-                                          {% elsif param_quarters._parameter_value == '5_prev_quarter' %}
+                                          {% elsif param_quarters._parameter_value == '5_prev_period' %}
 
-                                          AND quarter_number = 7
+                                          AND period_number = 7
 
                                           {% endif %}
 
@@ -317,13 +317,13 @@ view: implied_growth {
     parameter: param_quarters {
       label: "Quarter Period"
       type: unquoted
-      allowed_value: { label: "Current Quarter" value: "current_quarter" }
-      allowed_value: { label: "Previous Quarter" value: "prev_quarter" }
-      allowed_value: { label: "2 Previous Quarters" value: "2_prev_quarter" }
-      allowed_value: { label: "3 Previous Quarters" value: "3_prev_quarter" }
-      allowed_value: { label: "4 Previous Quarters" value: "4_prev_quarter" }
-      allowed_value: { label: "5 Previous Quarters" value: "5_prev_quarter" }
-      default_value: "current_quarter"
+      allowed_value: { label: "Current Period" value: "current_period" }
+      allowed_value: { label: "Previous Period" value: "prev_period" }
+      allowed_value: { label: "2 Previous Periods" value: "2_prev_period" }
+      allowed_value: { label: "3 Previous Periods" value: "3_prev_period" }
+      allowed_value: { label: "4 Previous Periods" value: "4_prev_period" }
+      allowed_value: { label: "5 Previous Periods" value: "5_prev_period" }
+      default_value: "current_period"
     }
 
     dimension: row_name {

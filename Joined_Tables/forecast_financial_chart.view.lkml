@@ -19,6 +19,7 @@ view: forecast_financial_chart {
                   finished_growth.reported_sales,
                   finished_growth.yago_reported_sales,
                   finished_growth.reported_growth,
+                  finished_growth.reported_sales_currency,
                   CASE WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
                        WHEN finished_growth.financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
                        ELSE finished_growth.gbp_spend END as gbp_spend,
@@ -76,7 +77,17 @@ view: forecast_financial_chart {
                   CASE WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_constind_currency.SQL_TABLE_NAME}) and panel_type = "CONSTIND" THEN null
                        WHEN finished_growth.yago_financial_start_dt < (SELECT min(trans_date) FROM ${dist_day_sym_brand_cardtype_emax_currency.SQL_TABLE_NAME}) and panel_type = "EMAX" THEN null
                        ELSE finished_growth.estimated_growth END as estimated_growth,
+                  gbp_estimated_growth,
+                  usd_estimated_growth,
+                  eur_estimated_growth,
+                  cad_estimated_growth,
+                  dkk_estimated_growth,
+                  nok_estimated_growth,
+                  jpy_estimated_growth,
+                  sek_estimated_growth,
+                  pln_estimated_growth,
                   finished_growth.latest_reported_num,
+
                   finished_growth.one_predicted_reported,
                   finished_growth.two_predicted_reported,
                   finished_growth.three_predicted_reported,
@@ -86,6 +97,7 @@ view: forecast_financial_chart {
                   finished_growth.seven_predicted_reported,
                   finished_growth.eight_predicted_reported,
                   finished_growth.all_predicted_reported,
+
                   finished_growth.one_observed_gap,
                   finished_growth.two_observed_gap,
                   finished_growth.three_observed_gap,
@@ -95,6 +107,7 @@ view: forecast_financial_chart {
                   finished_growth.seven_observed_gap,
                   finished_growth.eight_observed_gap,
                   finished_growth.all_observed_gap,
+
                   finished_growth.recommended_panel,
                   finished_growth.actual_financial_start_dt,
                   finished_growth.actual_financial_end_dt,
@@ -102,7 +115,9 @@ view: forecast_financial_chart {
                   finished_growth.actual_yago_financial_end_dt,
                   finished_growth.actual_two_yago_financial_start_dt,
                   finished_growth.actual_two_yago_financial_end_dt,
+
                   finished_growth.observed_gap,
+
                   q_nums.quarter_number,
                   date_diff(finished_growth.actual_financial_end_dt, finished_growth.actual_financial_start_dt, day) + 1 as current_qtr_length,
                   date_diff(finished_growth.actual_yago_financial_end_dt, finished_growth.actual_yago_financial_start_dt, day) + 1 as yago_qtr_length,
@@ -115,16 +130,25 @@ view: forecast_financial_chart {
 
         SELECT *,
 
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported,
 
+                current_spend.gbp_spend / yago_spend.gbp_spend - 1 as gbp_estimated_growth,
+                current_spend.usd_spend / yago_spend.usd_spend - 1 as usd_estimated_growth,
+                current_spend.eur_spend / yago_spend.eur_spend - 1 as eur_estimated_growth,
+                current_spend.cad_spend / yago_spend.cad_spend - 1 as cad_estimated_growth,
+                current_spend.dkk_spend / yago_spend.dkk_spend - 1 as dkk_estimated_growth,
+                current_spend.nok_spend / yago_spend.nok_spend - 1 as nok_estimated_growth,
+                current_spend.jpy_spend / yago_spend.jpy_spend - 1 as jpy_estimated_growth,
+                current_spend.sek_spend / yago_spend.sek_spend - 1 as sek_estimated_growth,
+                current_spend.pln_spend / yago_spend.pln_spend - 1 as pln_estimated_growth
         FROM
 
             (SELECT current_spend.row,
@@ -143,6 +167,7 @@ view: forecast_financial_chart {
                     current_spend.reported_sales,
                     current_spend.yago_reported_sales,
                     current_spend.reported_growth,
+                    current_spend.reported_sales_currency,
                     current_spend.gbp_spend,
                     current_spend.usd_spend,
                     current_spend.eur_spend,
@@ -161,19 +186,134 @@ view: forecast_financial_chart {
                     yago_spend.jpy_spend as yago_jpy_spend,
                     yago_spend.sek_spend as yago_sek_spend,
                     yago_spend.pln_spend as yago_pln_spend,
-                    current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN
+                              current_spend.gbp_spend / yago_spend.gbp_spend - 1
+                         WHEN current_spend.reported_sales_currency = "USD" THEN
+                              current_spend.usd_spend / yago_spend.usd_spend - 1
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN
+                              current_spend.eur_spend / yago_spend.eur_spend - 1
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN
+                              current_spend.cad_spend / yago_spend.cad_spend - 1
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN
+                              current_spend.dkk_spend / yago_spend.dkk_spend - 1
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN
+                              current_spend.nok_spend / yago_spend.nok_spend - 1
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN
+                              current_spend.jpy_spend / yago_spend.jpy_spend - 1
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN
+                              current_spend.sek_spend / yago_spend.sek_spend - 1
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN
+                              current_spend.pln_spend / yago_spend.pln_spend - 1
+                    END as estimated_growth,
                     current_spend.latest_reported_num,
 
-                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as one_observed_gap,
 
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as two_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as three_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as four_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as five_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as six_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as seven_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as eight_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as all_observed_gap,
 
                     CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
                     current_spend.actual_financial_start_dt,
@@ -182,7 +322,16 @@ view: forecast_financial_chart {
                     current_spend.actual_yago_financial_end_dt,
                     current_spend.actual_two_yago_financial_start_dt,
                     current_spend.actual_two_yago_financial_end_dt,
-                    current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                    END as observed_gap
 
                     FROM
 
@@ -200,7 +349,8 @@ view: forecast_financial_chart {
                                 financials.yago_financial_start_dt,
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
-                                financials.yago_reported_sales ,
+                                financials.yago_reported_sales,
+                                financials.reported_sales_currency,
                                 sum(current_spend.gbp_spend_amount) as gbp_spend,
                                 sum(current_spend.usd_spend_amount) as usd_spend,
                                 sum(current_spend.cad_spend_amount) as cad_spend,
@@ -268,6 +418,7 @@ view: forecast_financial_chart {
                                   financials.yago_financial_end_dt,
                                   financials.reported_sales,
                                   financials.yago_reported_sales,
+                                  financials.reported_sales_currency,
                                   financials.latest_reported_num,
                                   financials.actual_financial_start_dt,
                                   financials.actual_financial_end_dt,
@@ -293,6 +444,7 @@ view: forecast_financial_chart {
                                       financials.yago_financial_end_dt,
                                       financials.reported_sales,
                                       financials.yago_reported_sales ,
+                                      financials.reported_sales_currency,
                                       sum(current_spend.gbp_spend_amount) as gbp_spend,
                                       sum(current_spend.usd_spend_amount) as usd_spend,
                                       sum(current_spend.cad_spend_amount) as cad_spend,
@@ -357,6 +509,7 @@ view: forecast_financial_chart {
                                        financials.yago_financial_end_dt,
                                        financials.reported_sales,
                                        financials.yago_reported_sales,
+                                       financials.reported_sales_currency,
                                        financials.actual_financial_start_dt,
                                        financials.actual_financial_end_dt,
                                        financials.actual_yago_financial_start_dt,
@@ -374,15 +527,15 @@ view: forecast_financial_chart {
 
         SELECT *,
 
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+              CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported,
 
         FROM
 
@@ -402,6 +555,7 @@ view: forecast_financial_chart {
                       current_spend.reported_sales,
                       current_spend.yago_reported_sales,
                       current_spend.reported_growth,
+                      current_spend.reported_sales_currency,
                       current_spend.gbp_spend,
                       current_spend.usd_spend,
                       current_spend.eur_spend,
@@ -420,28 +574,152 @@ view: forecast_financial_chart {
                       yago_spend.jpy_spend as yago_jpy_spend,
                       yago_spend.sek_spend as yago_sek_spend,
                       yago_spend.pln_spend as yago_pln_spend,
-                      current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
-                      current_spend.latest_reported_num,
+                      CASE WHEN current_spend.reported_sales_currency = "GBP" THEN
+                              current_spend.gbp_spend / yago_spend.gbp_spend - 1
+                         WHEN current_spend.reported_sales_currency = "USD" THEN
+                              current_spend.usd_spend / yago_spend.usd_spend - 1
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN
+                              current_spend.eur_spend / yago_spend.eur_spend - 1
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN
+                              current_spend.cad_spend / yago_spend.cad_spend - 1
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN
+                              current_spend.dkk_spend / yago_spend.dkk_spend - 1
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN
+                              current_spend.nok_spend / yago_spend.nok_spend - 1
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN
+                              current_spend.jpy_spend / yago_spend.jpy_spend - 1
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN
+                              current_spend.sek_spend / yago_spend.sek_spend - 1
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN
+                              current_spend.pln_spend / yago_spend.pln_spend - 1
+                    END as estimated_growth,
+                    current_spend.latest_reported_num,
 
-                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as one_observed_gap,
 
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as two_observed_gap,
 
-                      CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
-                      current_spend.actual_financial_start_dt,
-                      current_spend.actual_financial_end_dt,
-                      current_spend.actual_yago_financial_start_dt,
-                      current_spend.actual_yago_financial_end_dt,
-                      current_spend.actual_two_yago_financial_start_dt,
-                      current_spend.actual_two_yago_financial_end_dt,
-                      current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as three_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as four_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as five_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as six_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as seven_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as eight_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as all_observed_gap,
+
+                    CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                    current_spend.actual_financial_start_dt,
+                    current_spend.actual_financial_end_dt,
+                    current_spend.actual_yago_financial_start_dt,
+                    current_spend.actual_yago_financial_end_dt,
+                    current_spend.actual_two_yago_financial_start_dt,
+                    current_spend.actual_two_yago_financial_end_dt,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                    END as observed_gap
 
                       FROM
 
@@ -459,7 +737,8 @@ view: forecast_financial_chart {
                                   financials.yago_financial_start_dt,
                                   financials.yago_financial_end_dt,
                                   financials.reported_sales,
-                                  financials.yago_reported_sales ,
+                                  financials.yago_reported_sales,
+                                  financials.reported_sales_currency,
                                   sum(current_spend.gbp_spend_amount) as gbp_spend,
                                   sum(current_spend.usd_spend_amount) as usd_spend,
                                   sum(current_spend.cad_spend_amount) as cad_spend,
@@ -529,6 +808,7 @@ view: forecast_financial_chart {
                                    financials.yago_financial_end_dt,
                                    financials.reported_sales,
                                    financials.yago_reported_sales,
+                                   financials.reported_sales_currency,
                                    financials.latest_reported_num,
                                    financials.actual_financial_start_dt,
                                    financials.actual_financial_end_dt,
@@ -553,7 +833,8 @@ view: forecast_financial_chart {
                           financials.yago_financial_start_dt,
                           financials.yago_financial_end_dt,
                           financials.reported_sales,
-                          financials.yago_reported_sales ,
+                          financials.yago_reported_sales,
+                          financials.reported_sales_currency,
                           sum(current_spend.gbp_spend_amount) as gbp_spend,
                           sum(current_spend.usd_spend_amount) as usd_spend,
                           sum(current_spend.cad_spend_amount) as cad_spend,
@@ -622,6 +903,7 @@ view: forecast_financial_chart {
                            financials.yago_financial_end_dt,
                            financials.reported_sales,
                            financials.yago_reported_sales,
+                           financials.reported_sales_currency,
                            financials.actual_financial_start_dt,
                            financials.actual_financial_end_dt,
                            financials.actual_yago_financial_start_dt,
@@ -641,15 +923,15 @@ view: forecast_financial_chart {
 
         SELECT *,
 
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported,
 
         FROM
 
@@ -669,6 +951,7 @@ view: forecast_financial_chart {
                     current_spend.reported_sales,
                     current_spend.yago_reported_sales,
                     current_spend.reported_growth,
+                    current_spend.reported_sales_currency,
                     current_spend.gbp_spend,
                     current_spend.usd_spend,
                     current_spend.eur_spend,
@@ -687,19 +970,134 @@ view: forecast_financial_chart {
                     yago_spend.jpy_spend as yago_jpy_spend,
                     yago_spend.sek_spend as yago_sek_spend,
                     yago_spend.pln_spend as yago_pln_spend,
-                    current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN
+                              current_spend.gbp_spend / yago_spend.gbp_spend - 1
+                         WHEN current_spend.reported_sales_currency = "USD" THEN
+                              current_spend.usd_spend / yago_spend.usd_spend - 1
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN
+                              current_spend.eur_spend / yago_spend.eur_spend - 1
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN
+                              current_spend.cad_spend / yago_spend.cad_spend - 1
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN
+                              current_spend.dkk_spend / yago_spend.dkk_spend - 1
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN
+                              current_spend.nok_spend / yago_spend.nok_spend - 1
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN
+                              current_spend.jpy_spend / yago_spend.jpy_spend - 1
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN
+                              current_spend.sek_spend / yago_spend.sek_spend - 1
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN
+                              current_spend.pln_spend / yago_spend.pln_spend - 1
+                    END as estimated_growth,
                     current_spend.latest_reported_num,
 
-                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as one_observed_gap,
 
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as two_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as three_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as four_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as five_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as six_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as seven_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as eight_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as all_observed_gap,
 
                     CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
                     current_spend.actual_financial_start_dt,
@@ -708,7 +1106,16 @@ view: forecast_financial_chart {
                     current_spend.actual_yago_financial_end_dt,
                     current_spend.actual_two_yago_financial_start_dt,
                     current_spend.actual_two_yago_financial_end_dt,
-                    current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                    END as observed_gap
 
                     FROM
 
@@ -726,7 +1133,8 @@ view: forecast_financial_chart {
                                 financials.yago_financial_start_dt,
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
-                                financials.yago_reported_sales ,
+                                financials.yago_reported_sales,
+                                financials.reported_sales_currency,
                                 sum(current_spend.gbp_spend_amount) as gbp_spend,
                                 sum(current_spend.usd_spend_amount) as usd_spend,
                                 sum(current_spend.cad_spend_amount) as cad_spend,
@@ -796,6 +1204,7 @@ view: forecast_financial_chart {
                                  financials.yago_financial_end_dt,
                                  financials.reported_sales,
                                  financials.yago_reported_sales,
+                                 financials.reported_sales_currency,
                                  financials.latest_reported_num,
                                  financials.actual_financial_start_dt,
                                  financials.actual_financial_end_dt,
@@ -820,7 +1229,8 @@ view: forecast_financial_chart {
                                       financials.yago_financial_start_dt,
                                       financials.yago_financial_end_dt,
                                       financials.reported_sales,
-                                      financials.yago_reported_sales ,
+                                      financials.yago_reported_sales,
+                                      financials.reported_sales_currency,
                                       sum(current_spend.gbp_spend_amount) as gbp_spend,
                                       sum(current_spend.usd_spend_amount) as usd_spend,
                                       sum(current_spend.cad_spend_amount) as cad_spend,
@@ -887,6 +1297,7 @@ view: forecast_financial_chart {
                                          financials.yago_financial_end_dt,
                                          financials.reported_sales,
                                          financials.yago_reported_sales,
+                                         financials.reported_sales_currency,
                                          financials.actual_financial_start_dt,
                                          financials.actual_financial_end_dt,
                                          financials.actual_yago_financial_start_dt,
@@ -904,15 +1315,15 @@ view: forecast_financial_chart {
 
         SELECT *,
 
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported,
 
         FROM
 
@@ -932,6 +1343,7 @@ view: forecast_financial_chart {
                       current_spend.reported_sales,
                       current_spend.yago_reported_sales,
                       current_spend.reported_growth,
+                      current_spend.reported_sales_currency,
                       current_spend.gbp_spend,
                       current_spend.usd_spend,
                       current_spend.eur_spend,
@@ -950,28 +1362,152 @@ view: forecast_financial_chart {
                       yago_spend.jpy_spend as yago_jpy_spend,
                       yago_spend.sek_spend as yago_sek_spend,
                       yago_spend.pln_spend as yago_pln_spend,
-                      current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
+                      CASE WHEN current_spend.reported_sales_currency = "GBP" THEN
+                              current_spend.gbp_spend / yago_spend.gbp_spend - 1
+                         WHEN current_spend.reported_sales_currency = "USD" THEN
+                              current_spend.usd_spend / yago_spend.usd_spend - 1
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN
+                              current_spend.eur_spend / yago_spend.eur_spend - 1
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN
+                              current_spend.cad_spend / yago_spend.cad_spend - 1
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN
+                              current_spend.dkk_spend / yago_spend.dkk_spend - 1
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN
+                              current_spend.nok_spend / yago_spend.nok_spend - 1
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN
+                              current_spend.jpy_spend / yago_spend.jpy_spend - 1
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN
+                              current_spend.sek_spend / yago_spend.sek_spend - 1
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN
+                              current_spend.pln_spend / yago_spend.pln_spend - 1
+                    END as estimated_growth,
                       current_spend.latest_reported_num,
 
-                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
+                      CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as one_observed_gap,
 
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as two_observed_gap,
 
-                      CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
-                      current_spend.actual_financial_start_dt,
-                      current_spend.actual_financial_end_dt,
-                      current_spend.actual_yago_financial_start_dt,
-                      current_spend.actual_yago_financial_end_dt,
-                      current_spend.actual_two_yago_financial_start_dt,
-                      current_spend.actual_two_yago_financial_end_dt,
-                      current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as three_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as four_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as five_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as six_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as seven_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as eight_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as all_observed_gap,
+
+                    CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                    current_spend.actual_financial_start_dt,
+                    current_spend.actual_financial_end_dt,
+                    current_spend.actual_yago_financial_start_dt,
+                    current_spend.actual_yago_financial_end_dt,
+                    current_spend.actual_two_yago_financial_start_dt,
+                    current_spend.actual_two_yago_financial_end_dt,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                    END as observed_gap
 
               FROM
 
@@ -989,7 +1525,8 @@ view: forecast_financial_chart {
                             financials.yago_financial_start_dt,
                             financials.yago_financial_end_dt,
                             financials.reported_sales,
-                            financials.yago_reported_sales ,
+                            financials.yago_reported_sales,
+                            financials.reported_sales_currency,
                             sum(current_spend.gbp_spend_amount) as gbp_spend,
                             sum(current_spend.usd_spend_amount) as usd_spend,
                             sum(current_spend.cad_spend_amount) as cad_spend,
@@ -1062,6 +1599,7 @@ view: forecast_financial_chart {
                              financials.yago_financial_end_dt,
                              financials.reported_sales,
                              financials.yago_reported_sales,
+                             financials.reported_sales_currency,
                              financials.latest_reported_num,
                              financials.actual_financial_start_dt,
                              financials.actual_financial_end_dt,
@@ -1086,7 +1624,8 @@ view: forecast_financial_chart {
                                 financials.yago_financial_start_dt,
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
-                                financials.yago_reported_sales ,
+                                financials.yago_reported_sales,
+                                financials.reported_sales_currency,
                                 sum(current_spend.gbp_spend_amount) as gbp_spend,
                                 sum(current_spend.usd_spend_amount) as usd_spend,
                                 sum(current_spend.cad_spend_amount) as cad_spend,
@@ -1148,7 +1687,7 @@ view: forecast_financial_chart {
                                  current_spend.panel_type,
                                  current_spend.cardtype,
                                  current_spend.cardtype_include,
-                                 current_spend.panel_method, financials.period, financials.yago_period, financials.financial_start_dt, financials.financial_end_dt, financials.yago_financial_start_dt, financials.yago_financial_end_dt, financials.reported_sales, financials.yago_reported_sales, financials.actual_financial_start_dt, financials.actual_financial_end_dt, financials.actual_yago_financial_start_dt, financials.actual_yago_financial_end_dt
+                                 current_spend.panel_method, financials.period, financials.yago_period, financials.financial_start_dt, financials.financial_end_dt, financials.yago_financial_start_dt, financials.yago_financial_end_dt, financials.reported_sales, financials.yago_reported_sales, financials.reported_sales_currency, financials.actual_financial_start_dt, financials.actual_financial_end_dt, financials.actual_yago_financial_start_dt, financials.actual_yago_financial_end_dt
 
                         ORDER BY symbol, period) yago_spend
 
@@ -1163,14 +1702,14 @@ view: forecast_financial_chart {
         SELECT *,
 
                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
-               CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported,
 
         FROM
 
@@ -1190,6 +1729,7 @@ view: forecast_financial_chart {
                     current_spend.reported_sales,
                     current_spend.yago_reported_sales,
                     current_spend.reported_growth,
+                    current_spend.reported_sales_currency,
                     current_spend.gbp_spend,
                     current_spend.usd_spend,
                     current_spend.eur_spend,
@@ -1208,19 +1748,134 @@ view: forecast_financial_chart {
                     yago_spend.jpy_spend as yago_jpy_spend,
                     yago_spend.sek_spend as yago_sek_spend,
                     yago_spend.pln_spend as yago_pln_spend,
-                    current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN
+                              current_spend.gbp_spend / yago_spend.gbp_spend - 1
+                         WHEN current_spend.reported_sales_currency = "USD" THEN
+                              current_spend.usd_spend / yago_spend.usd_spend - 1
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN
+                              current_spend.eur_spend / yago_spend.eur_spend - 1
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN
+                              current_spend.cad_spend / yago_spend.cad_spend - 1
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN
+                              current_spend.dkk_spend / yago_spend.dkk_spend - 1
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN
+                              current_spend.nok_spend / yago_spend.nok_spend - 1
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN
+                              current_spend.jpy_spend / yago_spend.jpy_spend - 1
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN
+                              current_spend.sek_spend / yago_spend.sek_spend - 1
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN
+                              current_spend.pln_spend / yago_spend.pln_spend - 1
+                    END as estimated_growth,
                     current_spend.latest_reported_num,
 
-                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as one_observed_gap,
 
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as two_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as three_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as four_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as five_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as six_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as seven_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as eight_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as all_observed_gap,
 
                     CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
                     current_spend.actual_financial_start_dt,
@@ -1229,7 +1884,16 @@ view: forecast_financial_chart {
                     current_spend.actual_yago_financial_end_dt,
                     current_spend.actual_two_yago_financial_start_dt,
                     current_spend.actual_two_yago_financial_end_dt,
-                    current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                    END as observed_gap
 
                     FROM
 
@@ -1247,7 +1911,8 @@ view: forecast_financial_chart {
                                 financials.yago_financial_start_dt,
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
-                                financials.yago_reported_sales ,
+                                financials.yago_reported_sales,
+                                financials.reported_sales_currency,
                                 sum(current_spend.gbp_spend_amount) as gbp_spend,
                                 sum(current_spend.usd_spend_amount) as usd_spend,
                                 sum(current_spend.cad_spend_amount) as cad_spend,
@@ -1315,6 +1980,7 @@ view: forecast_financial_chart {
                                   financials.yago_financial_end_dt,
                                   financials.reported_sales,
                                   financials.yago_reported_sales,
+                                  financials.reported_sales_currency,
                                   financials.latest_reported_num,
                                   financials.actual_financial_start_dt,
                                   financials.actual_financial_end_dt,
@@ -1339,7 +2005,8 @@ view: forecast_financial_chart {
                                       financials.yago_financial_start_dt,
                                       financials.yago_financial_end_dt,
                                       financials.reported_sales,
-                                      financials.yago_reported_sales ,
+                                      financials.yago_reported_sales,
+                                      financials.reported_sales_currency,
                                       sum(current_spend.gbp_spend_amount) as gbp_spend,
                                       sum(current_spend.usd_spend_amount) as usd_spend,
                                       sum(current_spend.cad_spend_amount) as cad_spend,
@@ -1404,6 +2071,7 @@ view: forecast_financial_chart {
                                        financials.yago_financial_end_dt,
                                        financials.reported_sales,
                                        financials.yago_reported_sales,
+                                       financials.reported_sales_currency,
                                        financials.actual_financial_start_dt,
                                        financials.actual_financial_end_dt,
                                        financials.actual_yago_financial_start_dt,
@@ -1421,15 +2089,15 @@ view: forecast_financial_chart {
 
         SELECT *,
 
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+              CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported,
 
         FROM
 
@@ -1449,6 +2117,7 @@ view: forecast_financial_chart {
                       current_spend.reported_sales,
                       current_spend.yago_reported_sales,
                       current_spend.reported_growth,
+                      current_spend.reported_sales_currency,
                       current_spend.gbp_spend,
                       current_spend.usd_spend,
                       current_spend.eur_spend,
@@ -1467,28 +2136,152 @@ view: forecast_financial_chart {
                       yago_spend.jpy_spend as yago_jpy_spend,
                       yago_spend.sek_spend as yago_sek_spend,
                       yago_spend.pln_spend as yago_pln_spend,
-                      current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
+                      CASE WHEN current_spend.reported_sales_currency = "GBP" THEN
+                              current_spend.gbp_spend / yago_spend.gbp_spend - 1
+                         WHEN current_spend.reported_sales_currency = "USD" THEN
+                              current_spend.usd_spend / yago_spend.usd_spend - 1
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN
+                              current_spend.eur_spend / yago_spend.eur_spend - 1
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN
+                              current_spend.cad_spend / yago_spend.cad_spend - 1
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN
+                              current_spend.dkk_spend / yago_spend.dkk_spend - 1
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN
+                              current_spend.nok_spend / yago_spend.nok_spend - 1
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN
+                              current_spend.jpy_spend / yago_spend.jpy_spend - 1
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN
+                              current_spend.sek_spend / yago_spend.sek_spend - 1
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN
+                              current_spend.pln_spend / yago_spend.pln_spend - 1
+                    END as estimated_growth,
                       current_spend.latest_reported_num,
 
-                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
+                      CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as one_observed_gap,
 
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as two_observed_gap,
 
-                      CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
-                      current_spend.actual_financial_start_dt,
-                      current_spend.actual_financial_end_dt,
-                      current_spend.actual_yago_financial_start_dt,
-                      current_spend.actual_yago_financial_end_dt,
-                      current_spend.actual_two_yago_financial_start_dt,
-                      current_spend.actual_two_yago_financial_end_dt,
-                      current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as three_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as four_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as five_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as six_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as seven_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as eight_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as all_observed_gap,
+
+                    CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                    current_spend.actual_financial_start_dt,
+                    current_spend.actual_financial_end_dt,
+                    current_spend.actual_yago_financial_start_dt,
+                    current_spend.actual_yago_financial_end_dt,
+                    current_spend.actual_two_yago_financial_start_dt,
+                    current_spend.actual_two_yago_financial_end_dt,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                    END as observed_gap
 
                       FROM
 
@@ -1506,7 +2299,8 @@ view: forecast_financial_chart {
                                   financials.yago_financial_start_dt,
                                   financials.yago_financial_end_dt,
                                   financials.reported_sales,
-                                  financials.yago_reported_sales ,
+                                  financials.yago_reported_sales,
+                                  financials.reported_sales_currency,
                                   sum(current_spend.gbp_spend_amount) as gbp_spend,
                                   sum(current_spend.usd_spend_amount) as usd_spend,
                                   sum(current_spend.cad_spend_amount) as cad_spend,
@@ -1576,6 +2370,7 @@ view: forecast_financial_chart {
                                    financials.yago_financial_end_dt,
                                    financials.reported_sales,
                                    financials.yago_reported_sales,
+                                   financials.reported_sales_currency,
                                    financials.latest_reported_num,
                                    financials.actual_financial_start_dt,
                                    financials.actual_financial_end_dt,
@@ -1600,7 +2395,8 @@ view: forecast_financial_chart {
                           financials.yago_financial_start_dt,
                           financials.yago_financial_end_dt,
                           financials.reported_sales,
-                          financials.yago_reported_sales ,
+                          financials.yago_reported_sales,
+                          financials.reported_sales_currency,
                           sum(current_spend.gbp_spend_amount) as gbp_spend,
                           sum(current_spend.usd_spend_amount) as usd_spend,
                           sum(current_spend.cad_spend_amount) as cad_spend,
@@ -1669,6 +2465,7 @@ view: forecast_financial_chart {
                            financials.yago_financial_end_dt,
                            financials.reported_sales,
                            financials.yago_reported_sales,
+                           financials.reported_sales_currency,
                            financials.actual_financial_start_dt,
                            financials.actual_financial_end_dt,
                            financials.actual_yago_financial_start_dt,
@@ -1688,15 +2485,15 @@ view: forecast_financial_chart {
 
         SELECT *,
 
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported,
 
         FROM
 
@@ -1716,6 +2513,7 @@ view: forecast_financial_chart {
                     current_spend.reported_sales,
                     current_spend.yago_reported_sales,
                     current_spend.reported_growth,
+                    current_spend.reported_sales_currency,
                     current_spend.gbp_spend,
                     current_spend.usd_spend,
                     current_spend.eur_spend,
@@ -1734,19 +2532,134 @@ view: forecast_financial_chart {
                     yago_spend.jpy_spend as yago_jpy_spend,
                     yago_spend.sek_spend as yago_sek_spend,
                     yago_spend.pln_spend as yago_pln_spend,
-                    current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN
+                              current_spend.gbp_spend / yago_spend.gbp_spend - 1
+                         WHEN current_spend.reported_sales_currency = "USD" THEN
+                              current_spend.usd_spend / yago_spend.usd_spend - 1
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN
+                              current_spend.eur_spend / yago_spend.eur_spend - 1
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN
+                              current_spend.cad_spend / yago_spend.cad_spend - 1
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN
+                              current_spend.dkk_spend / yago_spend.dkk_spend - 1
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN
+                              current_spend.nok_spend / yago_spend.nok_spend - 1
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN
+                              current_spend.jpy_spend / yago_spend.jpy_spend - 1
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN
+                              current_spend.sek_spend / yago_spend.sek_spend - 1
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN
+                              current_spend.pln_spend / yago_spend.pln_spend - 1
+                    END as estimated_growth,
                     current_spend.latest_reported_num,
 
-                    CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
-                    CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as one_observed_gap,
 
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as two_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as three_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as four_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as five_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as six_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as seven_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as eight_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as all_observed_gap,
 
                     CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
                     current_spend.actual_financial_start_dt,
@@ -1755,7 +2668,16 @@ view: forecast_financial_chart {
                     current_spend.actual_yago_financial_end_dt,
                     current_spend.actual_two_yago_financial_start_dt,
                     current_spend.actual_two_yago_financial_end_dt,
-                    current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                    END as observed_gap
 
                     FROM
 
@@ -1773,7 +2695,8 @@ view: forecast_financial_chart {
                                 financials.yago_financial_start_dt,
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
-                                financials.yago_reported_sales ,
+                                financials.yago_reported_sales,
+                                financials.reported_sales_currency,
                                 sum(current_spend.gbp_spend_amount) as gbp_spend,
                                 sum(current_spend.usd_spend_amount) as usd_spend,
                                 sum(current_spend.cad_spend_amount) as cad_spend,
@@ -1843,6 +2766,7 @@ view: forecast_financial_chart {
                                  financials.yago_financial_end_dt,
                                  financials.reported_sales,
                                  financials.yago_reported_sales,
+                                 financials.reported_sales_currency,
                                  financials.latest_reported_num,
                                  financials.actual_financial_start_dt,
                                  financials.actual_financial_end_dt,
@@ -1867,7 +2791,8 @@ view: forecast_financial_chart {
                                       financials.yago_financial_start_dt,
                                       financials.yago_financial_end_dt,
                                       financials.reported_sales,
-                                      financials.yago_reported_sales ,
+                                      financials.yago_reported_sales,
+                                      financials.reported_sales_currency,
                                       sum(current_spend.gbp_spend_amount) as gbp_spend,
                                       sum(current_spend.usd_spend_amount) as usd_spend,
                                       sum(current_spend.cad_spend_amount) as cad_spend,
@@ -1934,6 +2859,7 @@ view: forecast_financial_chart {
                                          financials.yago_financial_end_dt,
                                          financials.reported_sales,
                                          financials.yago_reported_sales,
+                                         financials.reported_sales_currency,
                                          financials.actual_financial_start_dt,
                                          financials.actual_financial_end_dt,
                                          financials.actual_yago_financial_start_dt,
@@ -1951,15 +2877,15 @@ view: forecast_financial_chart {
 
         SELECT *,
 
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
-        CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported
+              CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) ELSE null END as one_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(two_observed_gap) over(PARTITION BY symbol) ELSE null END as two_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(three_observed_gap) over(PARTITION BY symbol) ELSE null END as three_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(four_observed_gap) over(PARTITION BY symbol) ELSE null END as four_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(five_observed_gap) over(PARTITION BY symbol) ELSE null END as five_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(six_observed_gap) over(PARTITION BY symbol) ELSE null END as six_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(seven_observed_gap) over(PARTITION BY symbol) ELSE null END as seven_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(eight_observed_gap) over(PARTITION BY symbol) ELSE null END as eight_predicted_reported,
+                CASE WHEN latest_reported_num = 1 THEN estimated_growth + avg(one_observed_gap) over(PARTITION BY symbol) WHEN (reported_growth is null and estimated_growth is not null and reported_sales is null and yago_reported_sales is not null) THEN estimated_growth + avg(all_observed_gap) over(PARTITION BY symbol) ELSE null END as all_predicted_reported,
 
         FROM
 
@@ -1979,6 +2905,7 @@ view: forecast_financial_chart {
                       current_spend.reported_sales,
                       current_spend.yago_reported_sales,
                       current_spend.reported_growth,
+                      current_spend.reported_sales_currency,
                       current_spend.gbp_spend,
                       current_spend.usd_spend,
                       current_spend.eur_spend,
@@ -1997,28 +2924,152 @@ view: forecast_financial_chart {
                       yago_spend.jpy_spend as yago_jpy_spend,
                       yago_spend.sek_spend as yago_sek_spend,
                       yago_spend.pln_spend as yago_pln_spend,
-                      current_spend.gbp_spend / yago_spend.gbp_spend - 1 as estimated_growth,
+                      CASE WHEN current_spend.reported_sales_currency = "GBP" THEN
+                              current_spend.gbp_spend / yago_spend.gbp_spend - 1
+                         WHEN current_spend.reported_sales_currency = "USD" THEN
+                              current_spend.usd_spend / yago_spend.usd_spend - 1
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN
+                              current_spend.eur_spend / yago_spend.eur_spend - 1
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN
+                              current_spend.cad_spend / yago_spend.cad_spend - 1
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN
+                              current_spend.dkk_spend / yago_spend.dkk_spend - 1
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN
+                              current_spend.nok_spend / yago_spend.nok_spend - 1
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN
+                              current_spend.jpy_spend / yago_spend.jpy_spend - 1
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN
+                              current_spend.sek_spend / yago_spend.sek_spend - 1
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN
+                              current_spend.pln_spend / yago_spend.pln_spend - 1
+                      END as estimated_growth,
                       current_spend.latest_reported_num,
 
-                      CASE WHEN current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as one_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as two_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as three_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as four_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as five_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as six_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as seven_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as eight_observed_gap,
-                      CASE WHEN current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) ELSE null END as all_observed_gap,
+                      CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num = 1 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as one_observed_gap,
 
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 2 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as two_observed_gap,
 
-                      CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
-                      current_spend.actual_financial_start_dt,
-                      current_spend.actual_financial_end_dt,
-                      current_spend.actual_yago_financial_start_dt,
-                      current_spend.actual_yago_financial_end_dt,
-                      current_spend.actual_two_yago_financial_start_dt,
-                      current_spend.actual_two_yago_financial_end_dt,
-                      current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1) as observed_gap
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 3 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as three_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 4 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as four_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 5 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as five_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 6 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as six_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 7 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as seven_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 8 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as eight_observed_gap,
+
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" AND current_spend.latest_reported_num between 1 and 10 THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                         ELSE null
+                    END as all_observed_gap,
+
+                    CASE WHEN current_spend.panel_type = current_spend.panel_method THEN 1 ELSE 0 END as recommended_panel,
+                    current_spend.actual_financial_start_dt,
+                    current_spend.actual_financial_end_dt,
+                    current_spend.actual_yago_financial_start_dt,
+                    current_spend.actual_yago_financial_end_dt,
+                    current_spend.actual_two_yago_financial_start_dt,
+                    current_spend.actual_two_yago_financial_end_dt,
+                    CASE WHEN current_spend.reported_sales_currency = "GBP" THEN current_spend.reported_growth - (current_spend.gbp_spend / yago_spend.gbp_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "USD" THEN current_spend.reported_growth - (current_spend.usd_spend / yago_spend.usd_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "EUR" THEN current_spend.reported_growth - (current_spend.eur_spend / yago_spend.eur_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "CAD" THEN current_spend.reported_growth - (current_spend.cad_spend / yago_spend.cad_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "DKK" THEN current_spend.reported_growth - (current_spend.dkk_spend / yago_spend.dkk_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "NOK" THEN current_spend.reported_growth - (current_spend.nok_spend / yago_spend.nok_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "JPY" THEN current_spend.reported_growth - (current_spend.jpy_spend / yago_spend.jpy_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "SEK" THEN current_spend.reported_growth - (current_spend.sek_spend / yago_spend.sek_spend - 1)
+                         WHEN current_spend.reported_sales_currency = "PLN" THEN current_spend.reported_growth - (current_spend.pln_spend / yago_spend.pln_spend - 1)
+                    END as observed_gap
 
               FROM
 
@@ -2036,7 +3087,8 @@ view: forecast_financial_chart {
                             financials.yago_financial_start_dt,
                             financials.yago_financial_end_dt,
                             financials.reported_sales,
-                            financials.yago_reported_sales ,
+                            financials.yago_reported_sales,
+                            financials.reported_sales_currency,
                             sum(current_spend.gbp_spend_amount) as gbp_spend,
                             sum(current_spend.usd_spend_amount) as usd_spend,
                             sum(current_spend.cad_spend_amount) as cad_spend,
@@ -2109,6 +3161,7 @@ view: forecast_financial_chart {
                              financials.yago_financial_end_dt,
                              financials.reported_sales,
                              financials.yago_reported_sales,
+                             financials.reported_sales_currency,
                              financials.latest_reported_num,
                              financials.actual_financial_start_dt,
                              financials.actual_financial_end_dt,
@@ -2133,7 +3186,8 @@ view: forecast_financial_chart {
                                 financials.yago_financial_start_dt,
                                 financials.yago_financial_end_dt,
                                 financials.reported_sales,
-                                financials.yago_reported_sales ,
+                                financials.yago_reported_sales,
+                                financials.reported_sales_currency,
                                 sum(current_spend.gbp_spend_amount) as gbp_spend,
                                 sum(current_spend.usd_spend_amount) as usd_spend,
                                 sum(current_spend.cad_spend_amount) as cad_spend,
@@ -2195,7 +3249,7 @@ view: forecast_financial_chart {
                                  current_spend.panel_type,
                                  current_spend.cardtype,
                                  current_spend.cardtype_include,
-                                 current_spend.panel_method, financials.period, financials.yago_period, financials.financial_start_dt, financials.financial_end_dt, financials.yago_financial_start_dt, financials.yago_financial_end_dt, financials.reported_sales, financials.yago_reported_sales, financials.actual_financial_start_dt, financials.actual_financial_end_dt, financials.actual_yago_financial_start_dt, financials.actual_yago_financial_end_dt
+                                 current_spend.panel_method, financials.period, financials.yago_period, financials.financial_start_dt, financials.financial_end_dt, financials.yago_financial_start_dt, financials.yago_financial_end_dt, financials.reported_sales, financials.reported_sales_currency, financials.yago_reported_sales, financials.actual_financial_start_dt, financials.actual_financial_end_dt, financials.actual_yago_financial_start_dt, financials.actual_yago_financial_end_dt
 
                         ORDER BY symbol, period) yago_spend
 

@@ -62,54 +62,56 @@ view: ds_discover {
                                 consensus.consensus_metric,
                                 ver.version
 
-                                            FROM ${forecast_financial_chart.SQL_TABLE_NAME} financial_chart
+                          FROM ${forecast_financial_chart.SQL_TABLE_NAME} financial_chart
 
-                          LEFT JOIN (SELECT distinct symbol, symbol_id, consensus_period, consensus_metric FROM ${ground_truth_financial.SQL_TABLE_NAME}
+                          LEFT JOIN (SELECT distinct symbol, symbol_id, consensus_period, consensus_metric
+                                     FROM ${ground_truth_financial.SQL_TABLE_NAME}
+                                     WHERE consensus_period is not null) consensus
 
-                                      WHERE consensus_period is not null) consensus
+                          on consensus.consensus_period = financial_chart.period
+                          and consensus.symbol = financial_chart.symbol
 
-                                            on consensus.consensus_period = financial_chart.period
-                                            and consensus.symbol = financial_chart.symbol
+                          LEFT JOIN (SELECT distinct symbol, reported_metric_summary, ownership_status
+                                     FROM ${ground_truth_financial_all_sym.SQL_TABLE_NAME}) reported_metric #FROM ${ground_truth_financial.SQL_TABLE_NAME}) reported_metric
 
-                            LEFT JOIN (SELECT distinct symbol, reported_metric_summary, ownership_status FROM ${ground_truth_financial_all_sym.SQL_TABLE_NAME}) reported_metric #FROM ${ground_truth_financial.SQL_TABLE_NAME}) reported_metric
+                          on reported_metric.symbol = financial_chart.symbol
 
-                    on reported_metric.symbol = financial_chart.symbol
+                          CROSS JOIN (SELECT max(version) as version
+                                      FROM ${dist_day_sym_cardtype_emax_currency.SQL_TABLE_NAME}) ver --replace with dist_day_sym_emax_currency once created
 
-                    CROSS JOIN (SELECT max(version) as version FROM ${dist_day_sym_cardtype_emax_currency.SQL_TABLE_NAME}) ver --replace with dist_day_sym_emax_currency once created
+                                      WHERE 1=1
 
-                                            WHERE 1=1
+                                      {% if param_panel_type._parameter_value == 'Emax' %}
 
-                                              {% if param_panel_type._parameter_value == 'Emax' %}
+                                      AND panel_type = "EMAX"
 
-                                              AND panel_type = "EMAX"
+                                      {% elsif param_panel_type._parameter_value == 'Constind' %}
 
-                                              {% elsif param_panel_type._parameter_value == 'Constind' %}
+                                      AND panel_type = "CONSTIND"
 
-                                              AND panel_type = "CONSTIND"
+                                      {% elsif param_panel_type._parameter_value == 'Recommended' %}
 
-                                              {% elsif param_panel_type._parameter_value == 'Recommended' %}
+                                      AND recommended_panel = 1
 
-                                              AND recommended_panel = 1
+                                      {% endif %}
 
-                                              {% endif %}
+                                      {% if param_cardtype._parameter_value == 'debit' %}
 
-                                              {% if param_cardtype._parameter_value == 'debit' %}
+                                      AND cardtype = "DEBIT"
 
-                                              AND cardtype = "DEBIT"
+                                      {% elsif param_cardtype._parameter_value == 'debit_credit' %}
 
-                                              {% elsif param_cardtype._parameter_value == 'debit_credit' %}
+                                      AND cardtype = "CREDIT + DEBIT"
 
-                                              AND cardtype = "CREDIT + DEBIT"
+                                      {% elsif param_cardtype._parameter_value == 'credit' %}
 
-                                              {% elsif param_cardtype._parameter_value == 'credit' %}
+                                      AND cardtype = "CREDIT"
 
-                                              AND cardtype = "CREDIT"
+                                      {% elsif param_cardtype._parameter_value == 'recommended' %}
 
-                                              {% elsif param_cardtype._parameter_value == 'recommended' %}
+                                      AND cardtype = "RECOMMENDED"
 
-                                              AND cardtype = "RECOMMENDED"
-
-                                              {% endif %})
+                                      {% endif %})
 
    SELECT
 
@@ -151,20 +153,30 @@ view: ds_discover {
 
               on corrs.symbol = fins.symbol
 
-    LEFT JOIN (SELECT qtd_s.symbol, qtd_gbp_spend / full_gbp_spend as est_pct_cap
+    LEFT JOIN (SELECT qtd_s.symbol, qtd_spend / full_spend as est_pct_cap
 
                                         FROM
 
                                         (SELECT symbol,
-                                                sum(yago_gbp_spend_amount) as qtd_gbp_spend,
-                                                sum(yago_usd_spend_amount) as qtd_usd_spend,
-                                                sum(yago_cad_spend_amount) as qtd_cad_spend,
-                                                sum(yago_eur_spend_amount) as qtd_eur_spend,
-                                                sum(yago_dkk_spend_amount) as qtd_dkk_spend,
-                                                sum(yago_nok_spend_amount) as qtd_nok_spend,
-                                                sum(yago_jpy_spend_amount) as qtd_jpy_spend,
-                                                sum(yago_sek_spend_amount) as qtd_sek_spend,
-                                                sum(yago_pln_spend_amount) as qtd_pln_spend
+                                                {% if currency._parameter_value == 'gbp' %}
+                                                sum(yago_gbp_spend_amount) as qtd_spend,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(yago_usd_spend_amount) as qtd_spend,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(yago_cad_spend_amount) as qtd_spend,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(yago_eur_spend_amount) as qtd_spend,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(yago_dkk_spend_amount) as qtd_spend,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(yago_nok_spend_amount) as qtd_spend,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(yago_jpy_spend_amount) as qtd_spend,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(yago_sek_spend_amount) as qtd_spend,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(yago_pln_spend_amount) as qtd_spend
+                                                {% endif %}
                                          FROM ${forecast_date_sums.SQL_TABLE_NAME}
 
                                                                     WHERE day_count = quarter_length
@@ -209,15 +221,25 @@ view: ds_discover {
 
                                                  LEFT JOIN  (SELECT symbol,
                                                                     #sum(yago_spend_amount) as full_spend
-                                                                    sum(yago_gbp_spend_amount) as full_gbp_spend,
-                                                                    sum(yago_usd_spend_amount) as full_usd_spend,
-                                                                    sum(yago_cad_spend_amount) as full_cad_spend,
-                                                                    sum(yago_eur_spend_amount) as full_eur_spend,
-                                                                    sum(yago_dkk_spend_amount) as full_dkk_spend,
-                                                                    sum(yago_nok_spend_amount) as full_nok_spend,
-                                                                    sum(yago_jpy_spend_amount) as full_jpy_spend,
-                                                                    sum(yago_sek_spend_amount) as full_sek_spend,
-                                                                    sum(yago_pln_spend_amount) as full_pln_spend
+                                                                    {% if currency._parameter_value == 'gbp' %}
+                                                                    sum(yago_gbp_spend_amount) as full_spend,
+                                                                    {% elsif currency._parameter_value == 'usd' %}
+                                                                    sum(yago_usd_spend_amount) as full_spend,
+                                                                    {% elsif currency._parameter_value == 'cad' %}
+                                                                    sum(yago_cad_spend_amount) as full_spend,
+                                                                    {% elsif currency._parameter_value == 'eur' %}
+                                                                    sum(yago_eur_spend_amount) as full_spend,
+                                                                    {% elsif currency._parameter_value == 'dkk' %}
+                                                                    sum(yago_dkk_spend_amount) as full_spend,
+                                                                    {% elsif currency._parameter_value == 'nok' %}
+                                                                    sum(yago_nok_spend_amount) as full_spend,
+                                                                    {% elsif currency._parameter_value == 'jpy' %}
+                                                                    sum(yago_jpy_spend_amount) as full_spend,
+                                                                    {% elsif currency._parameter_value == 'sek' %}
+                                                                    sum(yago_sek_spend_amount) as full_spend,
+                                                                    {% elsif currency._parameter_value == 'pln' %}
+                                                                    sum(yago_pln_spend_amount) as full_spend
+                                                                    {% endif %}
                                                              FROM ${forecast_date_sums.SQL_TABLE_NAME}
 
                                                                     WHERE day_count = quarter_length + balance_length
@@ -265,7 +287,26 @@ view: ds_discover {
 
                                                                       on pct_cap.symbol = fins.symbol
 
-     LEFT JOIN       (SELECT symbol, sum(yago_gbp_spend_amount) / nullif(sum(two_yago_gbp_spend_amount), 0) - 1 as qtd_compare
+     LEFT JOIN       (SELECT symbol,
+                             {% if currency._parameter_value == 'gbp' %}
+                             sum(yago_gbp_spend_amount) / nullif(sum(two_yago_gbp_spend_amount), 0) - 1 as qtd_compare
+                             {% elsif currency._parameter_value == 'usd' %}
+                             sum(yago_usd_spend_amount) / nullif(sum(two_yago_usd_spend_amount), 0) - 1 as qtd_compare
+                             {% elsif currency._parameter_value == 'eur' %}
+                             sum(yago_eur_spend_amount) / nullif(sum(two_yago_eur_spend_amount), 0) - 1 as qtd_compare
+                             {% elsif currency._parameter_value == 'cad' %}
+                             sum(yago_cad_spend_amount) / nullif(sum(two_yago_cad_spend_amount), 0) - 1 as qtd_compare
+                             {% elsif currency._parameter_value == 'dkk' %}
+                             sum(yago_dkk_spend_amount) / nullif(sum(two_yago_dkk_spend_amount), 0) - 1 as qtd_compare
+                             {% elsif currency._parameter_value == 'nok' %}
+                             sum(yago_nok_spend_amount) / nullif(sum(two_yago_nok_spend_amount), 0) - 1 as qtd_compare
+                             {% elsif currency._parameter_value == 'jpy' %}
+                             sum(yago_jpy_spend_amount) / nullif(sum(two_yago_jpy_spend_amount), 0) - 1 as qtd_compare
+                             {% elsif currency._parameter_value == 'sek' %}
+                             sum(yago_sek_spend_amount) / nullif(sum(two_yago_sek_spend_amount), 0) - 1 as qtd_compare
+                             {% elsif currency._parameter_value == 'pln' %}
+                             sum(yago_pln_spend_amount) / nullif(sum(two_yago_pln_spend_amount), 0) - 1 as qtd_compare
+                             {% endif %}
                       FROM ${forecast_date_sums.SQL_TABLE_NAME}
 
                                                                     WHERE day_count = quarter_length
@@ -316,7 +357,27 @@ view: ds_discover {
 
 
 
-      LEFT JOIN                    (SELECT symbol, sum(balance_yago_gbp_spend_amount) / nullif(sum(balance_two_yago_gbp_spend_amount), 0) - 1 as balance_of_q FROM ${forecast_date_sums.SQL_TABLE_NAME}
+      LEFT JOIN                    (SELECT symbol,
+                                           {% if currency._parameter_value == 'gbp' %}
+                                           sum(balance_yago_gbp_spend_amount) / nullif(sum(balance_two_yago_gbp_spend_amount), 0) - 1 as balance_of_q
+                                           {% elsif currency._parameter_value == 'usd' %}
+                                            sum(balance_yago_usd_spend_amount) / nullif(sum(balance_two_yago_usd_spend_amount), 0) - 1 as balance_of_q
+                                           {% elsif currency._parameter_value == 'eur' %}
+                                           sum(balance_yago_eur_spend_amount) / nullif(sum(balance_two_yago_eur_spend_amount), 0) - 1 as balance_of_q
+                                           {% elsif currency._parameter_value == 'cad' %}
+                                           sum(balance_yago_cad_spend_amount) / nullif(sum(balance_two_yago_cad_spend_amount), 0) - 1 as balance_of_q
+                                           {% elsif currency._parameter_value == 'dkk' %}
+                                           sum(balance_yago_dkk_spend_amount) / nullif(sum(balance_two_yago_dkk_spend_amount), 0) - 1 as balance_of_q
+                                           {% elsif currency._parameter_value == 'nok' %}
+                                           sum(balance_yago_nok_spend_amount) / nullif(sum(balance_two_yago_nok_spend_amount), 0) - 1 as balance_of_q
+                                           {% elsif currency._parameter_value == 'jpy' %}
+                                           sum(balance_yago_jpy_spend_amount) / nullif(sum(balance_two_yago_jpy_spend_amount), 0) - 1 as balance_of_q
+                                           {% elsif currency._parameter_value == 'sek' %}
+                                           sum(balance_yago_sek_spend_amount) / nullif(sum(balance_two_yago_sek_spend_amount), 0) - 1 as balance_of_q
+                                           {% elsif currency._parameter_value == 'pln' %}
+                                           sum(balance_yago_pln_spend_amount) / nullif(sum(balance_two_yago_pln_spend_amount), 0) - 1 as balance_of_q
+                                           {% endif %}
+                                    FROM ${forecast_date_sums.SQL_TABLE_NAME}
 
                                                                     WHERE day_count = quarter_length + 1
 
@@ -369,7 +430,27 @@ view: ds_discover {
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as week_one_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as week_one_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as week_one_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as week_one_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as week_one_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as week_one_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as week_one_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as week_one_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as week_one_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as week_one_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -428,7 +509,27 @@ view: ds_discover {
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as month_one_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as month_one_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as month_one_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as month_one_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as month_one_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as month_one_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as month_one_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as month_one_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as month_one_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as month_one_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -487,7 +588,27 @@ view: ds_discover {
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as qtr_one_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as qtr_one_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as qtr_one_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as qtr_one_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as qtr_one_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as qtr_one_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as qtr_one_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as qtr_one_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as qtr_one_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as qtr_one_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -546,7 +667,27 @@ LEFT JOIN                      ( SELECT week_two_growth, symbol, period, period_
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as week_two_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as week_two_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as week_two_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as week_two_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as week_two_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as week_two_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as week_two_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as week_two_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as week_two_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as week_two_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -607,7 +748,27 @@ LEFT JOIN                      ( SELECT week_three_growth, symbol, period, perio
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as week_three_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as week_three_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as week_three_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as week_three_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as week_three_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as week_three_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as week_three_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as week_three_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as week_three_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as week_three_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -668,7 +829,27 @@ LEFT JOIN                      ( SELECT week_four_growth, symbol, period, period
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as week_four_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as week_four_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as week_four_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as week_four_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as week_four_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as week_four_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as week_four_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as week_four_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as week_four_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as week_four_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -728,7 +909,27 @@ LEFT JOIN                      ( SELECT month_two_growth, symbol, period, period
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as month_two_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as month_two_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as month_two_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as month_two_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as month_two_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as month_two_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as month_two_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as month_two_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as month_two_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as month_two_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -789,7 +990,27 @@ LEFT JOIN                      ( SELECT month_three_growth, symbol, period, peri
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as month_three_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as month_three_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as month_three_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as month_three_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as month_three_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as month_three_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as month_three_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as month_three_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as month_three_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as month_three_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -850,7 +1071,27 @@ LEFT JOIN                      ( SELECT month_four_growth, symbol, period, perio
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as month_four_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as month_four_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as month_four_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as month_four_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as month_four_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as month_four_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as month_four_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as month_four_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as month_four_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as month_four_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -910,7 +1151,27 @@ LEFT JOIN                      ( SELECT qtr_two_growth, symbol, period, period_d
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as qtr_two_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as qtr_two_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as qtr_two_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as qtr_two_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as qtr_two_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as qtr_two_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as qtr_two_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as qtr_two_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as qtr_two_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as qtr_two_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -971,7 +1232,27 @@ LEFT JOIN                      ( SELECT qtr_three_growth, symbol, period, period
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as qtr_three_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as qtr_three_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as qtr_three_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as qtr_three_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as qtr_three_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as qtr_three_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as qtr_three_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as qtr_three_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as qtr_three_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as qtr_three_growth,
+                                                {% endif %}
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -1032,7 +1313,28 @@ LEFT JOIN                      ( SELECT qtr_four_growth, symbol, period, period_
 
                                         FROM
 
-                                        (SELECT sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as qtr_four_growth, symbol, period, period_day
+                                        (SELECT {% if currency._parameter_value == 'gbp' %}
+                                                sum(gbp_spend_amount) / sum(prev_gbp_spend_amount) - 1 as qtr_four_growth,
+                                                {% elsif currency._parameter_value == 'usd' %}
+                                                sum(usd_spend_amount) / sum(prev_usd_spend_amount) - 1 as qtr_four_growth,
+                                                {% elsif currency._parameter_value == 'eur' %}
+                                                sum(eur_spend_amount) / sum(prev_eur_spend_amount) - 1 as qtr_four_growth,
+                                                {% elsif currency._parameter_value == 'cad' %}
+                                                sum(cad_spend_amount) / sum(prev_cad_spend_amount) - 1 as qtr_four_growth,
+                                                {% elsif currency._parameter_value == 'dkk' %}
+                                                sum(dkk_spend_amount) / sum(prev_dkk_spend_amount) - 1 as qtr_four_growth,
+                                                {% elsif currency._parameter_value == 'nok' %}
+                                                sum(nok_spend_amount) / sum(prev_nok_spend_amount) - 1 as qtr_four_growth,
+                                                {% elsif currency._parameter_value == 'jpy' %}
+                                                sum(jpy_spend_amount) / sum(prev_jpy_spend_amount) - 1 as qtr_four_growth,
+                                                {% elsif currency._parameter_value == 'sek' %}
+                                                sum(sek_spend_amount) / sum(prev_sek_spend_amount) - 1 as qtr_four_growth,
+                                                {% elsif currency._parameter_value == 'pln' %}
+                                                sum(pln_spend_amount) / sum(prev_pln_spend_amount) - 1 as qtr_four_growth,
+                                                {% endif %}
+
+
+                                                symbol, period, period_day
 
                                         FROM ${by_card_underlying_symbol_yy.SQL_TABLE_NAME}
 
@@ -1133,6 +1435,7 @@ LEFT JOIN                      ( SELECT qtr_four_growth, symbol, period, period_
       allowed_value: { label: "Japanese Yen (JPY)" value: "jpy"}
       allowed_value: { label: "Swedish Krona (SEK)" value: "sek"}
       allowed_value: { label: "Polish Zloty (PLN)" value: "pln"}
+      default_value: "gbp"
     }
 
     dimension: symbol {

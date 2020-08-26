@@ -2,15 +2,89 @@ view: qtd_chart {
   derived_table: {
     sql: SELECT *,
 
-                CASE WHEN current_sum_include = "include" then current_spend_amount else null END as current_spend_amount_include,
-                CASE WHEN yago_sum_include = "include" then yago_spend_amount else null END as yago_spend_amount_include,
-                CASE WHEN two_yago_sum_include = "include" then two_yago_spend_amount else null END as two_yago_spend_amount_include,
-                CASE WHEN balance_yago_sum_include = "include" then balance_yago_spend_amount else null END as balance_yago_spend_amount_include,
-                CASE WHEN balance_two_yago_sum_include = "include" then balance_two_yago_spend_amount else null END as balance_two_yago_spend_amount_include
+                {% if currency._parameter_value == 'gbp' %}
+
+                CASE WHEN current_sum_include = "include" then current_gbp_spend_amount else null END as current_spend_amount_include,
+                CASE WHEN yago_sum_include = "include" then yago_gbp_spend_amount else null END as yago_spend_amount_include,
+                CASE WHEN two_yago_sum_include = "include" then two_yago_gbp_spend_amount else null END as two_yago_spend_amount_include,
+                CASE WHEN balance_yago_sum_include = "include" then balance_yago_gbp_spend_amount else null END as balance_yago_spend_amount_include,
+                CASE WHEN balance_two_yago_sum_include = "include" then balance_two_yago_gbp_spend_amount else null END as balance_two_yago_spend_amount_include
+
+                {% elsif currency._parameter_value == 'usd' %}
+
+                CASE WHEN current_sum_include = "include" then current_usd_spend_amount else null END as current_spend_amount_include,
+                CASE WHEN yago_sum_include = "include" then yago_usd_spend_amount else null END as yago_spend_amount_include,
+                CASE WHEN two_yago_sum_include = "include" then two_yago_usd_spend_amount else null END as two_yago_spend_amount_include,
+                CASE WHEN balance_yago_sum_include = "include" then balance_yago_usd_spend_amount else null END as balance_yago_spend_amount_include,
+                CASE WHEN balance_two_yago_sum_include = "include" then balance_two_yago_usd_spend_amount else null END as balance_two_yago_spend_amount_include
+
+                {% elsif currency._parameter_value == 'eur' %}
+
+                CASE WHEN current_sum_include = "include" then current_eur_spend_amount else null END as current_spend_amount_include,
+                CASE WHEN yago_sum_include = "include" then yago_eur_spend_amount else null END as yago_spend_amount_include,
+                CASE WHEN two_yago_sum_include = "include" then two_yago_eur_spend_amount else null END as two_yago_spend_amount_include,
+                CASE WHEN balance_yago_sum_include = "include" then balance_yago_eur_spend_amount else null END as balance_yago_spend_amount_include,
+                CASE WHEN balance_two_yago_sum_include = "include" then balance_two_yago_eur_spend_amount else null END as balance_two_yago_spend_amount_include
+
+                {% elsif currency._parameter_value == 'cad' %}
+
+                CASE WHEN current_sum_include = "include" then current_cad_spend_amount else null END as current_spend_amount_include,
+                CASE WHEN yago_sum_include = "include" then yago_cad_spend_amount else null END as yago_spend_amount_include,
+                CASE WHEN two_yago_sum_include = "include" then two_yago_cad_spend_amount else null END as two_yago_spend_amount_include,
+                CASE WHEN balance_yago_sum_include = "include" then balance_yago_cad_spend_amount else null END as balance_yago_spend_amount_include,
+                CASE WHEN balance_two_yago_sum_include = "include" then balance_two_yago_cad_spend_amount else null END as balance_two_yago_spend_amount_include
+
+                {% elsif currency._parameter_value == 'dkk' %}
+
+                CASE WHEN current_sum_include = "include" then current_dkk_spend_amount else null END as current_spend_amount_include,
+                CASE WHEN yago_sum_include = "include" then yago_dkk_spend_amount else null END as yago_spend_amount_include,
+                CASE WHEN two_yago_sum_include = "include" then two_yago_dkk_spend_amount else null END as two_yago_spend_amount_include,
+                CASE WHEN balance_yago_sum_include = "include" then balance_yago_dkk_spend_amount else null END as balance_yago_spend_amount_include,
+                CASE WHEN balance_two_yago_sum_include = "include" then balance_two_yago_dkk_spend_amount else null END as balance_two_yago_spend_amount_include
+
+                {% elsif currency._parameter_value == 'nok' %}
+
+                CASE WHEN current_sum_include = "include" then current_nok_spend_amount else null END as current_spend_amount_include,
+                CASE WHEN yago_sum_include = "include" then yago_nok_spend_amount else null END as yago_spend_amount_include,
+                CASE WHEN two_yago_sum_include = "include" then two_yago_nok_spend_amount else null END as two_yago_spend_amount_include,
+                CASE WHEN balance_yago_sum_include = "include" then balance_yago_nok_spend_amount else null END as balance_yago_spend_amount_include,
+                CASE WHEN balance_two_yago_sum_include = "include" then balance_two_yago_nok_spend_amount else null END as balance_two_yago_spend_amount_include
+
+                {% elsif currency._parameter_value == 'jpy' %}
+
+                CASE WHEN current_sum_include = "include" then current_jpy_spend_amount else null END as current_spend_amount_include,
+                CASE WHEN yago_sum_include = "include" then yago_jpy_spend_amount else null END as yago_spend_amount_include,
+                CASE WHEN two_yago_sum_include = "include" then two_yago_jpy_spend_amount else null END as two_yago_spend_amount_include,
+                CASE WHEN balance_yago_sum_include = "include" then balance_yago_jpy_spend_amount else null END as balance_yago_spend_amount_include,
+                CASE WHEN balance_two_yago_sum_include = "include" then balance_two_yago_jpy_spend_amount else null END as balance_two_yago_spend_amount_include
+
+                {% elsif currency._parameter_value == 'sek' %}
+
+                CASE WHEN current_sum_include = "include" then current_sek_spend_amount else null END as current_spend_amount_include,
+                CASE WHEN yago_sum_include = "include" then yago_sek_spend_amount else null END as yago_spend_amount_include,
+                CASE WHEN two_yago_sum_include = "include" then two_yago_sek_spend_amount else null END as two_yago_spend_amount_include,
+                CASE WHEN balance_yago_sum_include = "include" then balance_yago_sek_spend_amount else null END as balance_yago_spend_amount_include,
+                CASE WHEN balance_two_yago_sum_include = "include" then balance_two_yago_sek_spend_amount else null END as balance_two_yago_spend_amount_include
+
+                {% elsif currency._parameter_value == 'pln' %}
+
+                CASE WHEN current_sum_include = "include" then current_pln_spend_amount else null END as current_spend_amount_include,
+                CASE WHEN yago_sum_include = "include" then yago_pln_spend_amount else null END as yago_spend_amount_include,
+                CASE WHEN two_yago_sum_include = "include" then two_yago_pln_spend_amount else null END as two_yago_spend_amount_include,
+                CASE WHEN balance_yago_sum_include = "include" then balance_yago_pln_spend_amount else null END as balance_yago_spend_amount_include,
+                CASE WHEN balance_two_yago_sum_include = "include" then balance_two_yago_pln_spend_amount else null END as balance_two_yago_spend_amount_include
+
+                {% endif %}
 
                 FROM ${forecast_date_sums.SQL_TABLE_NAME}
 
                 WHERE 1=1
+
+                {% if param_period_type._parameter_value == 'qtr' %}
+                AND period_type = 'FQ'
+                {% elsif param_period_type._parameter_value == 'half' %}
+                AND period_type = 'FH'
+                {% endif %}
 
 
                 {% if param_panel_type._parameter_value == 'Emax' %}
@@ -55,27 +129,27 @@ view: qtd_chart {
 
                 {% endif %}
 
-                {% if param_quarters._parameter_value == 'current_quarter' %}
+                {% if param_periods._parameter_value == 'current_quarter' %}
 
                 AND quarters = "Current Quarter"
 
-                {% elsif param_quarters._parameter_value == 'prev_quarter' %}
+                {% elsif param_periods._parameter_value == 'prev_quarter' %}
 
                 AND quarters = "Previous Quarter"
 
-                {% elsif param_quarters._parameter_value == '2_prev_quarter' %}
+                {% elsif param_periods._parameter_value == '2_prev_quarter' %}
 
                 AND quarters = "2 Previous Quarters"
 
-                {% elsif param_quarters._parameter_value == '3_prev_quarter' %}
+                {% elsif param_periods._parameter_value == '3_prev_quarter' %}
 
                 AND quarters = "3 Previous Quarters"
 
-                {% elsif param_quarters._parameter_value == '4_prev_quarter' %}
+                {% elsif param_periods._parameter_value == '4_prev_quarter' %}
 
                 AND quarters = "4 Previous Quarters"
 
-                {% elsif param_quarters._parameter_value == '5_prev_quarter' %}
+                {% elsif param_periods._parameter_value == '5_prev_quarter' %}
 
                 AND quarters = "5 Previous Quarters"
 
@@ -112,7 +186,7 @@ view: qtd_chart {
       default_value: "manda"
     }
 
-    parameter: param_quarters {
+    parameter: param_periods {
       label: "Quarter Period"
       type: unquoted
       allowed_value: { label: "Current Quarter" value: "current_quarter" }
@@ -122,6 +196,27 @@ view: qtd_chart {
 #             allowed_value: { label: "4 Previous Quarters" value: "4_prev_quarter" }
 #             allowed_value: { label: "5 Previous Quarters" value: "5_prev_quarter" }
       default_value: "current_quarter"
+    }
+
+    parameter: param_period_type {
+      label: "Type of Period"
+      type: unquoted
+      allowed_value: { label: "Fiscal Quarter" value: "qtr"}
+      allowed_value: { label: "Fiscal Half" value: "half"}
+    }
+
+    parameter: currency {
+      type: unquoted
+      allowed_value: { label: "Great British Pounds (GBP)" value: "gbp"}
+      allowed_value: { label: "United States Dollars (USD)" value: "usd"}
+      allowed_value: { label: "Euros (EUR)" value: "eur"}
+      allowed_value: { label: "Canadian Dollars (CAD)" value: "cad"}
+      allowed_value: { label: "Danish Krone (DKK)" value: "dkk"}
+      allowed_value: { label: "Norwegian Krone (NOK)" value: "nok"}
+      allowed_value: { label: "Japanese Yen (JPY)" value: "jpy"}
+      allowed_value: { label: "Swedish Krona (SEK)" value: "sek"}
+      allowed_value: { label: "Polish Zloty (PLN)" value: "pln"}
+      default_value: "gbp"
     }
 
     dimension: symbol {

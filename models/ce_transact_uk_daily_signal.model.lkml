@@ -30,3 +30,8 @@ explore: forecast_date_intervals {}
 explore: forecast_date_sums {}
 
 explore: symbol_financials {}
+
+explore: forecast_financial_chart {}
+
+
+explore: calendar {}
